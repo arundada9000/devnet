@@ -8,6 +8,8 @@ Sajilo Sahayata is an offline-first disaster management platform built to improv
 
 Built for DeerHack 2026 by Team DevNet.
 
+<img src="./assets//devnet-images/devnet.jpeg" width="200">
+
 ---
 
 ## Overview
@@ -16,11 +18,11 @@ In critical situations, response time matters more than anything.
 
 Sajilo Sahayata reduces the gap between incident reporting and official response through:
 
-* real-time incident reporting
-* automatic location detection
-* geospatial coordination
-* offline-first infrastructure
-* multilingual accessibility
+- real-time incident reporting
+- automatic location detection
+- geospatial coordination
+- offline-first infrastructure
+- multilingual accessibility
 
 Citizens can report incidents with GPS coordinates and media evidence, while local authorities receive live updates through an administrative coordination dashboard.
 
@@ -32,36 +34,36 @@ Designed for reliability in low-connectivity environments, the platform continue
 
 ### Citizen Platform
 
-* Live GPS-based incident reporting
-* Photo evidence upload
-* Offline report queue with auto-sync
-* Interactive disaster map
-* Emergency contact access
-* Real-time emergency alerts
-* Multi-language support
-* Safe zone discovery
+- Live GPS-based incident reporting
+- Photo evidence upload
+- Offline report queue with auto-sync
+- Interactive disaster map
+- Emergency contact access
+- Real-time emergency alerts
+- Multi-language support
+- Safe zone discovery
 
 ### Administrative Dashboard
 
-* Incident monitoring and verification
-* Report filtering and status management
-* Emergency alert broadcasting
-* User and responder management
-* Safe zone management
-* Analytics and visualization tools
+- Incident monitoring and verification
+- Report filtering and status management
+- Emergency alert broadcasting
+- User and responder management
+- Safe zone management
+- Analytics and visualization tools
 
 ---
 
 ## Technical Highlights
 
-* Progressive Web App architecture
-* IndexedDB offline persistence
-* Background Sync API support
-* Geospatial mapping with Leaflet
-* MongoDB 2dsphere indexing
-* Push notification infrastructure
-* Mobile-first responsive design
-* Serverless deployment compatibility
+- Progressive Web App architecture
+- IndexedDB offline persistence
+- Background Sync API support
+- Geospatial mapping with Leaflet
+- MongoDB 2dsphere indexing
+- Push notification infrastructure
+- Mobile-first responsive design
+- Serverless deployment compatibility
 
 The system is engineered to behave like emergency infrastructure, not just another CRUD application.
 
@@ -71,25 +73,25 @@ The system is engineered to behave like emergency infrastructure, not just anoth
 
 ### Frontend
 
-* React 18
-* TypeScript
-* Vite 6
-* Tailwind CSS v4
-* Zustand
-* TanStack React Query
-* React Router v7
-* Leaflet
+- React 18
+- TypeScript
+- Vite 6
+- Tailwind CSS v4
+- Zustand
+- TanStack React Query
+- React Router v7
+- Leaflet
 
 ### Backend
 
-* Node.js
-* Express
-* TypeScript
-* MongoDB
-* Mongoose
-* JWT Authentication
-* Cloudinary
-* Web Push
+- Node.js
+- Express
+- TypeScript
+- MongoDB
+- Mongoose
+- JWT Authentication
+- Cloudinary
+- Web Push
 
 ---
 
@@ -170,12 +172,12 @@ Backend Engineering, API Architecture
 
 ## Future Scope
 
-* AI-assisted incident classification
-* SMS fallback communication
-* Real-time responder tracking
-* Disaster heatmaps and prediction
-* Government emergency integrations
-* Advanced geospatial analytics
+- AI-assisted incident classification
+- SMS fallback communication
+- Real-time responder tracking
+- Disaster heatmaps and prediction
+- Government emergency integrations
+- Advanced geospatial analytics
 
 ---
 
@@ -189,3 +191,8 @@ Educational and hackathon use only.
 
 Disasters are chaotic enough.
 Communication should not be.
+
+## Moments
+
+<img src="./assets//devnet-images/devnet.jpeg">
+<img src="./assets//devnet-images/devnet-moments.jpeg">
