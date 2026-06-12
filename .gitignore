@@ -8,4 +8,5 @@ dist/
 .env.deploy
 *.log
 notes/
+backend-notes/
 CHECKPOINT.json
