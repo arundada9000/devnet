@@ -1,0 +1,60 @@
+{
+  "nav": {
+    "home": "Home",
+    "alerts": "Alerts",
+    "reports": "Reports",
+    "map": "Map",
+    "profile": "Profile"
+  },
+  "home": {
+    "title": "Dashboard",
+    "totalReports": "Total Reports",
+    "activeAlerts": "Active Alerts",
+    "nearbyZones": "Safe Zones"
+  },
+  "login": {
+    "title": "Welcome Back",
+    "subtitle": "Sign in to continue to Sajilo Sahayata.",
+    "phoneLabel": "Phone Number",
+    "passwordLabel": "Password",
+    "login": "Sign In",
+    "submitting": "Signing in...",
+    "success": "Login successful!",
+    "failed": "Login failed.",
+    "noAccount": "Don't have an account?",
+    "register": "Create one now"
+  },
+  "register": {
+    "title": "Create an Account",
+    "subtitle": "Join Sajilo Sahayata to report emergencies securely.",
+    "name": "Full Name",
+    "phone": "Phone Number",
+    "password": "Password",
+    "submit": "Create Account"
+  },
+  "report": {
+    "title": "Report Emergency",
+    "type": "Emergency Type",
+    "description": "Description",
+    "photo": "Add Photo",
+    "submit": "Submit Report",
+    "success": "Report submitted successfully!"
+  },
+  "map": {
+    "title": "Disaster Map",
+    "legend": "Legend"
+  },
+  "profile": {
+    "title": "Profile",
+    "edit": "Edit Profile",
+    "logout": "Logout"
+  },
+  "admin": {
+    "dashboard": "Dashboard",
+    "users": "Manage Users",
+    "reports": "Manage Reports",
+    "alerts": "Send Alerts",
+    "contacts": "Manage Contacts",
+    "safeZones": "Manage Safe Zones"
+  }
+}

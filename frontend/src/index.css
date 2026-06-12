@@ -1,0 +1,177 @@
+@import url("https://fonts.googleapis.com/css2?family=Montserrat&display=swap");
+
+@import "tailwindcss";
+@import "leaflet/dist/leaflet.css";
+
+:root {
+  --font-sans: "Inter", sans-serif;
+  --color-bg: #f9fafb;
+  --color-text: #111827;
+  width: 100%;
+}
+
+@theme {
+  --color-primary-red: #e9403e;
+  --color-primary-red-hover: #d33836;
+  --color-bg-light: #f4f7fe;
+  --color-bg-card: #edf2f8;
+  --color-text-dark: #264960;
+  --color-text-light: #ffffff;
+  --color-accent-yellow: #fae35e;
+}
+
+body {
+  margin: 0 auto;
+  padding: 0;
+  background-color: var(--color-bg);
+  color: var(--color-text);
+}
+
+button {
+  cursor: pointer;
+}
+
+select {
+  cursor: pointer;
+  transition: all 0.2s ease-in-out;
+}
+
+select:hover {
+  border-color: #6366f1;
+  box-shadow: 0 0 0 1px rgba(99, 102, 241, 0.2);
+}
+
+input[type="text"],
+input[type="email"],
+input[type="password"],
+input[type="number"],
+input[type="tel"],
+textarea {
+  transition: all 0.2s ease-in-out;
+}
+
+input[type="text"]:hover,
+input[type="email"]:hover,
+input[type="password"]:hover,
+input[type="number"]:hover,
+input[type="tel"]:hover,
+textarea:hover {
+  border-color: #818cf8;
+}
+
+input[type="text"]:focus,
+input[type="email"]:focus,
+input[type="password"]:focus,
+input[type="number"]:focus,
+input[type="tel"]:focus,
+textarea:focus {
+  border-color: #6366f1;
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2);
+  outline: none;
+}
+
+input[type="text"]:active,
+input[type="email"]:active,
+input[type="password"]:active,
+input[type="number"]:active,
+input[type="tel"]:active,
+textarea:active {
+  transform: scale(0.995);
+}
+
+.font-montserrat {
+  font-family: "Montserrat", sans-serif;
+}
+
+.font-poppins {
+  font-family: "Poppins", sans-serif;
+}
+
+.font-roboto {
+  font-family: "Roboto", sans-serif;
+}
+
+.font-inter {
+  font-family: "Inter", sans-serif;
+}
+
+.font-outfit {
+  font-family: "Outfit", sans-serif;
+}
+
+.font-mukta {
+  font-family: "Mukta", sans-serif;
+}
+
+.font-yantramanav {
+  font-family: "Yantramanav", sans-serif;
+}
+
+.font-khand {
+  font-family: "Khand", sans-serif;
+}
+
+.font-kalam {
+  font-family: "Kalam", cursive;
+}
+
+.font-laila {
+  font-family: "Laila", serif;
+}
+
+.font-sans {
+  font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont,
+    "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif;
+}
+
+@keyframes bounce-glow {
+  0%, 100% {
+    transform: translateY(0);
+    box-shadow: 0 0 10px rgba(59, 130, 246, 0.8);
+  }
+  50% {
+    transform: translateY(-6px);
+    box-shadow: 0 0 20px rgba(59, 130, 246, 1);
+  }
+}
+
+.animate-bounce-glow {
+  animation: bounce-glow 1.2s infinite;
+  border-radius: 50%;
+}
+
+.premium-popup .leaflet-popup-content-wrapper {
+  padding: 0;
+  overflow: hidden;
+  border-radius: 0.75rem;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+  background: transparent;
+}
+
+.premium-popup .leaflet-popup-content {
+  margin: 0;
+  line-height: normal;
+}
+
+.premium-popup .leaflet-popup-tip {
+  background: white;
+}
+
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f8fafc;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #c7d2fe;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #818cf8;
+}
