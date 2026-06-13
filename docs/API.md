@@ -157,7 +157,7 @@ Authorization: Bearer <token> (admin)
 GET /api/auth/users/:id
 ```
 
-**Response (200):** Single user object.
+**Response (200):** Single user object (includes password hash — use for server-side only)
 
 ---
 
@@ -199,6 +199,23 @@ Authorization: Bearer <token> (admin)
 ```json
 { "message": "User deleted successfully" }
 ```
+
+---
+
+### Get Nearby Volunteers (Admin)
+```
+GET /api/auth/volunteers/nearby?latitude=27.7172&longitude=85.3240&radius=10
+Authorization: Bearer <token> (admin)
+```
+
+**Query Parameters:**
+| Param | Type | Default | Description |
+|---|---|---|---|
+| `latitude` | number | required | Latitude of the disaster location |
+| `longitude` | number | required | Longitude of the disaster location |
+| `radius` | number | 5 | Search radius in kilometers |
+
+**Response (200):** Array of volunteer users within the given radius, sorted by proximity. Each object includes `username`, `phoneNumber`, `skills`, `location`, and `address`.
 
 ---
 
@@ -613,6 +630,77 @@ Content-Type: application/json
 ```json
 { "endpoint": "https://fcm.googleapis.com/..." }
 ```
+
+---
+
+## SMS Webhook
+
+### Receive Inbound SMS (Twilio Webhook)
+```
+POST /api/webhook/sms
+Content-Type: application/x-www-form-urlencoded
+```
+
+**Payload (from Twilio):**
+| Field | Description |
+|---|---|
+| `Body` | The text content of the SMS |
+| `From` | The sender's phone number (e.g., `+9779812345678`) |
+
+**Response (200):** TwiML XML confirming receipt.
+
+**Notes:** In production, Twilio signature validation is enforced. In development (`NODE_ENV !== production`), validation is bypassed for local testing. The SMS body is parsed by Gemini AI to extract disaster type, description, and location name. The location name is geocoded via Nominatim (OpenStreetMap) to obtain GPS coordinates.
+
+---
+
+### Reply to SMS Report (Admin)
+```
+POST /api/webhook/sms/reply
+Authorization: Bearer <token> (admin)
+Content-Type: application/json
+```
+
+**Request:**
+```json
+{
+  "phone": "+9779812345678",
+  "message": "Stay safe, a rescue team is on the way."
+}
+```
+
+**Response (200):**
+```json
+{
+  "message": "Reply sent successfully",
+  "sid": "SM1234567890abcdef..."
+}
+```
+
+**Notes:** Sends an outbound SMS via Twilio's Messaging Service. Requires valid `TWILIO_ACCOUNT_SID`, `TWILIO_AUTH_TOKEN`, and `TWILIO_MESSAGING_SERVICE_SID` environment variables.
+
+---
+
+### Broadcast Push to Selected Users (Admin)
+```
+POST /api/push/broadcast
+Authorization: Bearer <token> (admin)
+Content-Type: application/json
+```
+
+**Request:**
+```json
+{
+  "userIds": ["userId1", "userId2"],
+  "message": "Flood rescue needed at Pokhara."
+}
+```
+
+**Response (200):**
+```json
+{ "message": "Broadcast sent to 2 volunteers successfully." }
+```
+
+**Notes:** Sends web push notifications to all push subscriptions linked to the given user IDs. Expired subscriptions (410/404) are automatically cleaned up.
 
 ---
 
