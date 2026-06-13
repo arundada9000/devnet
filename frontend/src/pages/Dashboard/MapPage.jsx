@@ -454,10 +454,21 @@ const MapPage = () => {
                           <span className="text-xs font-medium leading-relaxed">{zone.address}</span>
                         </div>
                       )}
+                      <button
+                        onClick={() => {
+                          const destination = `${lat},${lng}`;
+                          const url = `https://www.google.com/maps/dir//${destination}`;
+                          window.open(url, "_blank");
+                        }}
+                        className={`w-full flex justify-center items-center gap-2 font-bold py-2.5 rounded-lg transition-all duration-200 shadow-sm border active:scale-95 ${getSafeZoneTheme(zone.type).btn}`}
+                      >
+                        <Navigation size={16} />
+                        {t("map.showPath")}
+                      </button>
                       {zone.phone && (
                         <a
                           href={`tel:${zone.phone}`}
-                          className={`w-full flex justify-center items-center gap-2 font-bold py-2.5 rounded-lg transition-all duration-200 shadow-sm border active:scale-95 ${getSafeZoneTheme(zone.type).btn}`}
+                          className={`w-full flex justify-center items-center gap-2 font-bold py-2 rounded-lg transition-all duration-200 text-xs border active:scale-95 ${getSafeZoneTheme(zone.type).btn}`}
                         >
                           <Phone size={14} />
                           {t("map.call", "Call")} {zone.phone}

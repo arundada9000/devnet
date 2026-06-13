@@ -20,7 +20,8 @@ import {
   Car,
   Trash2,
   AlertCircle,
-  WifiOff
+  WifiOff,
+  MessageSquare
 } from "lucide-react";
 import toast, { Toaster } from "react-hot-toast";
 import API from "../../api/axios";
@@ -445,6 +446,27 @@ export default function ReportForm() {
                 className="w-full border-2 border-gray-200 rounded-xl focus:ring-0 focus:border-blue-500 p-3 text-sm bg-gray-50 transition resize-none"
               />
             </div>
+          </motion.section>
+
+          {/* 4. SMS Fallback Card */}
+          <motion.section initial={{ y: 10, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.25 }} className="bg-gradient-to-r from-indigo-50 to-blue-50 rounded-2xl shadow-sm border border-indigo-100 p-5 space-y-4">
+            <div className="flex items-start gap-3">
+              <div className="p-2 bg-white rounded-lg text-indigo-600 shadow-sm border border-indigo-100">
+                <WifiOff size={22} />
+              </div>
+              <div>
+                <h3 className="text-sm font-bold text-gray-800">{t("report.noInternet", "No Internet? Report via SMS")}</h3>
+                <p className="text-xs text-gray-600 mt-1 leading-relaxed">
+                  {t("report.smsInstruction", "If you cannot connect to the internet, send an SMS. Our AI will automatically parse your emergency and notify authorities.")}
+                </p>
+              </div>
+            </div>
+            <a
+              href={`sms:${import.meta.env.VITE_TWILIO_PHONE_NUMBER || "+1234567890"}?body=Emergency%20Report:%20`}
+              className="flex items-center justify-center gap-2 w-full bg-white border border-indigo-200 text-indigo-700 font-bold py-2.5 rounded-xl hover:bg-indigo-100 transition active:scale-95 text-sm shadow-sm"
+            >
+              <MessageSquare size={18} /> {t("report.sendSmsNow", "Send SMS Now")}
+            </a>
           </motion.section>
 
           <motion.div initial={{ y: 10, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.3 }} className="pt-2">

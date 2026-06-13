@@ -188,6 +188,7 @@ const Dashboard = () => {
   const filteredIncidents = incidents
     .filter((incident) => {
       const status = incident.status || "reported";
+      if (status === "rejected") return false; // Hide spam/rejected reports from public feed
       return filterType === "all" || status === filterType;
     })
     .sort((a, b) =>

@@ -1,7 +1,9 @@
 const CACHE_NAME = "sajilo-sahayata-v3";
 
+// Injected at build time by vite-plugin-pwa (auto-generated hashed filenames)
 const BUILD_MANIFEST = self.__WB_MANIFEST;
 
+// Assets to pre-cache on install (static + build manifest)
 function getPrecacheAssets() {
   const staticAssets = [
     "/",
@@ -15,6 +17,9 @@ function getPrecacheAssets() {
   return staticAssets;
 }
 
+// Install: Pre-cache all known assets
+// New SW waits for user confirmation (SKIP_WAITING message) instead of auto-activating.
+// This lets the UpdateBanner prompt the user before refreshing.
 self.addEventListener("install", (event) => {
   event.waitUntil(
     caches.open(CACHE_NAME).then(async (cache) => {
@@ -24,6 +29,7 @@ self.addEventListener("install", (event) => {
   );
 });
 
+// Activate: Clean up old caches
 self.addEventListener("activate", (event) => {
   event.waitUntil(
     caches.keys().then((cacheNames) =>
@@ -36,13 +42,18 @@ self.addEventListener("activate", (event) => {
   );
 });
 
+// Fetch: Network-first for API, Cache-first for static assets & map tiles
 self.addEventListener("fetch", (event) => {
   const { request } = event;
   const url = new URL(request.url);
 
+  // Skip non-GET requests
   if (request.method !== "GET") return;
+
+  // Skip chrome-extension and other non-http(s)
   if (!url.protocol.startsWith("http")) return;
 
+  // ── Map tiles (CARTO): Cache-first, fallback to network ──
   if (url.hostname.includes("basemaps.cartocdn.com")) {
     event.respondWith(
       caches.match(request).then((cached) => {
@@ -58,6 +69,7 @@ self.addEventListener("fetch", (event) => {
     return;
   }
 
+  // API calls: Network first, fallback to cache
   if (url.pathname.startsWith("/api/")) {
     event.respondWith(
       fetch(request)
@@ -71,12 +83,14 @@ self.addEventListener("fetch", (event) => {
     return;
   }
 
+  // Static assets & pages: Cache first, fallback to network
   event.respondWith(
     caches.match(request).then((cached) => {
       if (cached) return cached;
 
       return fetch(request)
         .then((response) => {
+          // Don't cache opaque responses or errors
           if (!response || response.status !== 200 || response.type === "opaque") {
             return response;
           }
@@ -86,6 +100,7 @@ self.addEventListener("fetch", (event) => {
           return response;
         })
         .catch(() => {
+          // For navigation requests, serve the cached index.html (SPA fallback)
           if (request.mode === "navigate") {
             return caches.match("/index.html");
           }
@@ -94,6 +109,7 @@ self.addEventListener("fetch", (event) => {
   );
 });
 
+// ═══ Push Notifications ═══
 self.addEventListener("push", (event) => {
   let data = { title: "Sajilo Sahayata", body: "You have a new notification." };
 
@@ -102,6 +118,7 @@ self.addEventListener("push", (event) => {
       data = event.data.json();
     }
   } catch {
+    // If parse fails, use defaults
   }
 
   const options = {
@@ -123,6 +140,7 @@ self.addEventListener("push", (event) => {
   );
 });
 
+// Handle notification click
 self.addEventListener("notificationclick", (event) => {
   event.notification.close();
 
@@ -132,6 +150,7 @@ self.addEventListener("notificationclick", (event) => {
 
   event.waitUntil(
     clients.matchAll({ type: "window", includeUncontrolled: true }).then((clientList) => {
+      // If a window is already open, focus it and navigate
       for (const client of clientList) {
         if (client.url.includes(self.location.origin) && "focus" in client) {
           client.focus();
@@ -139,14 +158,17 @@ self.addEventListener("notificationclick", (event) => {
           return;
         }
       }
+      // Otherwise open a new window
       return clients.openWindow(targetUrl);
     })
   );
 });
 
+// ═══ Background Sync (for offline report queue) ═══
 self.addEventListener("sync", (event) => {
   if (event.tag === "sync-reports") {
     event.waitUntil(
+      // Notify main thread to trigger sync
       self.clients.matchAll().then((clients) => {
         clients.forEach((client) => {
           client.postMessage({ type: "SYNC_REPORTS" });
@@ -156,6 +178,7 @@ self.addEventListener("sync", (event) => {
   }
 });
 
+// Listen for messages from main thread
 self.addEventListener("message", (event) => {
   if (event.data && event.data.type === "SKIP_WAITING") {
     self.skipWaiting();

@@ -15,7 +15,7 @@ import { useTranslation } from "react-i18next";
 import toast from "react-hot-toast";
 
 const REPORT_TYPES = ["fire", "police", "flood", "accident", "landslide", "other"];
-const STATUS_TYPES = ["pending", "verified", "solved", "working"];
+const STATUS_TYPES = ["pending", "verified", "solved", "working", "rejected"];
 const PAGE_SIZE = 10;
 
 export default function Reports() {
@@ -55,9 +55,9 @@ export default function Reports() {
   const filtered = useMemo(() => {
     let data = [...reports];
     if (showSpam) {
-      data = data.filter((r) => r.aiAnalysis?.isFake === true);
+      data = data.filter((r) => r.status === "rejected");
     } else {
-      data = data.filter((r) => r.aiAnalysis?.isFake !== true);
+      data = data.filter((r) => r.status !== "rejected");
     }
     if (debouncedSearch) {
       const q = debouncedSearch.toLowerCase();
@@ -131,7 +131,7 @@ export default function Reports() {
   const counts = useMemo(() => {
     const c = { pending: 0, verified: 0, working: 0, solved: 0, spam: 0, totalReal: 0 };
     reports.forEach((r) => { 
-      if (r.aiAnalysis?.isFake) {
+      if (r.status === "rejected") {
         c.spam++;
       } else {
         c.totalReal++;
@@ -149,7 +149,7 @@ export default function Reports() {
     { label: t("admin.manageReports.solved"), color: "bg-green-100 text-green-800", count: counts.solved, icon: <CheckCircle size={22} /> },
   ];
 
-  const statusColor = (s) => s === "pending" ? "bg-yellow-100 text-yellow-700" : s === "verified" ? "bg-blue-100 text-blue-700" : s === "working" ? "bg-purple-100 text-purple-700" : "bg-green-100 text-green-700";
+  const statusColor = (s) => s === "pending" ? "bg-yellow-100 text-yellow-700" : s === "verified" ? "bg-blue-100 text-blue-700" : s === "working" ? "bg-purple-100 text-purple-700" : s === "rejected" ? "bg-red-100 text-red-700" : "bg-green-100 text-green-700";
 
   return (
     <>
@@ -237,7 +237,7 @@ export default function Reports() {
         imageUrl={viewItem?.imageUrl ? (viewItem.imageUrl.startsWith("http") ? viewItem.imageUrl : `${import.meta.env.VITE_API_URL.replace("/api", "")}${viewItem.imageUrl}`) : null}
         fields={[
           { label: t("admin.manageReports.typeLabel", "Type"), value: viewItem?.type, render: (v) => <span className="capitalize">{v}</span> },
-          { label: t("admin.manageReports.statusLabel", "Status"), value: viewItem?.status, render: (v) => <span className={`inline-block px-2.5 py-1 rounded-full text-xs font-semibold capitalize ${v === "pending" ? "bg-yellow-100 text-yellow-700" : v === "verified" ? "bg-blue-100 text-blue-700" : v === "working" ? "bg-purple-100 text-purple-700" : "bg-green-100 text-green-700"}`}>{v}</span> },
+          { label: t("admin.manageReports.statusLabel", "Status"), value: viewItem?.status, render: (v) => <span className={`inline-block px-2.5 py-1 rounded-full text-xs font-semibold capitalize ${v === "pending" ? "bg-yellow-100 text-yellow-700" : v === "verified" ? "bg-blue-100 text-blue-700" : v === "working" ? "bg-purple-100 text-purple-700" : v === "rejected" ? "bg-red-100 text-red-700" : "bg-green-100 text-green-700"}`}>{v}</span> },
           { label: t("admin.manageReports.description", "Description"), value: viewItem?.description },
           ...(viewItem?.rawDescription && viewItem.rawDescription !== viewItem.description ? [{ label: t("admin.manageReports.rawDescription", "Original SMS Text"), value: viewItem.rawDescription, render: (v) => <div className="p-2 mt-1 bg-gray-50 border border-gray-200 rounded text-sm italic text-gray-700">{v}</div> }] : []),
           ...(viewItem?.reportedByPhone ? [
