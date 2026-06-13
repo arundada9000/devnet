@@ -1,3 +1,4 @@
+// Local government boundary detection using backend API
 import { useEffect, useState } from "react";
 import { useLocalGovStore } from "../stores/localGovStore";
 
@@ -8,6 +9,7 @@ export const useLocalGovernment = () => {
 
   useEffect(() => {
     const detectLocalGov = async () => {
+      // Use cached value if available
       const cached = getLocalGov();
       if (cached) {
         setLocalGovState(cached);
@@ -26,6 +28,7 @@ export const useLocalGovernment = () => {
               const name = data.localGovName || "Unknown";
               const coords = [pos.coords.latitude, pos.coords.longitude];
 
+              // Cache result in Zustand
               setLocalGov(name, coords);
               setLocalGovState(name);
             } catch (err) {
@@ -56,3 +59,4 @@ export const useLocalGovernment = () => {
 
   return { localGov, loading };
 };
+

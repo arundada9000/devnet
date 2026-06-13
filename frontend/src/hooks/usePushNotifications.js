@@ -3,6 +3,9 @@ import API from "../api/axios";
 
 const PUSH_OPT_OUT_KEY = "sajilo-push-opted-out";
 
+/**
+ * Convert a VAPID public key from URL-safe base64 to Uint8Array.
+ */
 function urlBase64ToUint8Array(base64String) {
   const padding = "=".repeat((4 - (base64String.length % 4)) % 4);
   const base64 = (base64String + padding).replace(/-/g, "+").replace(/_/g, "/");
@@ -10,6 +13,13 @@ function urlBase64ToUint8Array(base64String) {
   return new Uint8Array([...rawData].map((char) => char.charCodeAt(0)));
 }
 
+/**
+ * React hook for managing Web Push Notification subscription.
+ *
+ * By default, auto-subscribes users on first visit (if permission is not denied
+ * and the user hasn't explicitly opted out). Users can unsubscribe from
+ * the Profile page, which sets an opt-out flag in localStorage.
+ */
 export default function usePushNotifications() {
   const [isSupported, setIsSupported] = useState(false);
   const [permission, setPermission] = useState("default");
@@ -17,6 +27,7 @@ export default function usePushNotifications() {
   const [loading, setLoading] = useState(false);
   const autoSubAttempted = useRef(false);
 
+  // ── Core subscribe logic (reusable) ──
   const doSubscribe = useCallback(async () => {
     try {
       const perm = await Notification.requestPermission();
@@ -49,6 +60,7 @@ export default function usePushNotifications() {
     }
   }, []);
 
+  // ── Check existing subscription & auto-subscribe ──
   useEffect(() => {
     const supported = "serviceWorker" in navigator && "PushManager" in window;
     setIsSupported(supported);
@@ -62,10 +74,12 @@ export default function usePushNotifications() {
         const existingSub = await registration.pushManager.getSubscription();
 
         if (existingSub) {
+          // Already subscribed in the browser
           setIsSubscribed(true);
           return;
         }
 
+        // Not subscribed yet — auto-subscribe unless user opted out
         const optedOut = localStorage.getItem(PUSH_OPT_OUT_KEY) === "true";
 
         if (
@@ -79,22 +93,26 @@ export default function usePushNotifications() {
           setLoading(false);
         }
       } catch {
+        // Silently fail
       }
     };
 
     init();
   }, [doSubscribe]);
 
+  // ── Manual subscribe (user re-enables from Profile) ──
   const subscribe = useCallback(async () => {
     setLoading(true);
     const success = await doSubscribe();
     if (success) {
+      // Clear the opt-out flag since user explicitly re-enabled
       localStorage.removeItem(PUSH_OPT_OUT_KEY);
     }
     setLoading(false);
     return success;
   }, [doSubscribe]);
 
+  // ── Unsubscribe (user opts out) ──
   const unsubscribe = useCallback(async () => {
     setLoading(true);
 
@@ -108,6 +126,7 @@ export default function usePushNotifications() {
       }
 
       setIsSubscribed(false);
+      // Mark as opted-out so auto-subscribe doesn't re-trigger
       localStorage.setItem(PUSH_OPT_OUT_KEY, "true");
       setLoading(false);
       return true;
