@@ -3,15 +3,19 @@ import Report from "../models/reportModel";
 import dayjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime";
 import { resolveGaPa } from "../utils/resolveGaPa";
+import { sendPushToUsers } from "./pushController";
+import User from "../models/userModel";
+import { analyzeDisasterImage } from "../services/aiService";
+
 import { v2 as cloudinary } from "cloudinary";
-import { env } from "../env";
 
 cloudinary.config({
-  cloud_name: env.CLOUDINARY_CLOUD_NAME,
-  api_key: env.CLOUDINARY_API_KEY,
-  api_secret: env.CLOUDINARY_API_SECRET,
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET,
 });
 
+// Helper: upload a buffer to Cloudinary via stream
 const uploadToCloudinary = (buffer: Buffer, folder: string): Promise<{ secure_url: string; public_id: string }> => {
   return new Promise((resolve, reject) => {
     const stream = cloudinary.uploader.upload_stream(
@@ -27,7 +31,12 @@ const uploadToCloudinary = (buffer: Buffer, folder: string): Promise<{ secure_ur
 
 export const createReport = async (req: Request, res: Response) => {
   const allowedTypes = [
-    "fire", "police", "flood", "accident", "landslide", "other",
+    "fire",
+    "police",
+    "flood",
+    "accident",
+    "landslide",
+    "other",
   ];
 
   try {
@@ -40,9 +49,14 @@ export const createReport = async (req: Request, res: Response) => {
       return;
     }
 
-    if (!description || typeof description !== "string" || description.length < 10) {
+    if (
+      !description ||
+      typeof description !== "string" ||
+      description.length < 10
+    ) {
       res.status(400).json({
-        message: "Description must be a string and at least 10 characters long.",
+        message:
+          "Description must be a string and at least 10 characters long.",
       });
       return;
     }
@@ -66,8 +80,14 @@ export const createReport = async (req: Request, res: Response) => {
       }
     }
 
+    // Auto-detect ga-pa from coordinates
     const [lng, lat] = parsedLocation;
     const localGovName = resolveGaPa(lat, lng);
+
+    let aiAnalysis;
+    if (imageUrl || req.file) {
+      aiAnalysis = await analyzeDisasterImage(imageUrl || "", type, req.file?.buffer, req.file?.mimetype);
+    }
 
     const report = new Report({
       type,
@@ -76,6 +96,8 @@ export const createReport = async (req: Request, res: Response) => {
       localGovName,
       imageUrl,
       imageId,
+      aiAnalysis,
+      status: aiAnalysis?.isFake ? "rejected" : "pending",
     });
 
     await report.save();
@@ -84,6 +106,31 @@ export const createReport = async (req: Request, res: Response) => {
       message: "Report created successfully",
       report,
     });
+
+    // Automatically ping nearby volunteers if not rejected
+    if (report.status !== "rejected") {
+      try {
+        const volunteers = await User.find({
+          isVolunteer: true,
+          location: {
+            $near: {
+              $geometry: { type: "Point", coordinates: [lng, lat] },
+              $maxDistance: 5000,
+            },
+          },
+        });
+
+        if (volunteers.length > 0) {
+          const volunteerIds = volunteers.map((v) => v.id.toString());
+          const title = `Volunteer Request: ${type.toUpperCase()}`;
+          const body = `A ${type} has been reported near your location. We need your help!`;
+          const url = `/reports/${report.id}`;
+          await sendPushToUsers(volunteerIds, title, body, url);
+        }
+      } catch (pushErr) {
+        console.error("Failed to auto-ping volunteers:", pushErr);
+      }
+    }
   } catch (error) {
     console.error("Error creating report:", error);
     res.status(400).json({ message: "Error creating report", error });
@@ -111,12 +158,12 @@ export const verifyReport = async (req: Request, res: Response) => {
   }
 };
 
-export const getAllReports = async (_req: Request, res: Response) => {
+export const getAllReports = async (req: Request, res: Response) => {
   try {
     const reports = await Report.find().sort({ createdAt: -1 });
     res.json(reports);
   } catch (error) {
-    res.status(400).json({ message: "Error fetching reports", error });
+    res.status(500).json({ message: "Error fetching reports", error });
   }
 };
 
@@ -135,27 +182,35 @@ export const getReportById = async (req: Request, res: Response) => {
 
 dayjs.extend(relativeTime);
 
-export const getAllReportLocations = async (_req: Request, res: Response) => {
+export const getAllReportLocations = async (req: Request, res: Response) => {
   try {
     const reports = await Report.find(
       {},
-      { location: 1, type: 1, _id: 1, createdAt: 1 }
+      {
+        location: 1,
+        type: 1,
+        _id: 1,
+        createdAt: 1,
+      }
     );
     const formattedReports = reports.map((report) => {
       const c = report.location.coordinates;
       const isNewFormat = c[0] > 70;
       const lng = isNewFormat ? c[0] : c[1];
       const lat = isNewFormat ? c[1] : c[0];
-
+      
       return {
         id: report._id,
-        title: `${report.type.charAt(0).toUpperCase() + report.type.slice(1)} reported`,
+        title: `${
+          report.type.charAt(0).toUpperCase() + report.type.slice(1)
+        } reported`,
         type: report.type,
         lat,
         lng,
         time: dayjs(report.createdAt).fromNow(),
       };
     });
+    console.log("Formatted Reports:", formattedReports);
     res.json(formattedReports);
   } catch (error) {
     res.status(400).json({ message: "Error fetching report locations", error });
@@ -189,6 +244,7 @@ export const deleteReport = async (req: Request, res: Response) => {
     }
     res.status(200).json({ message: "Report deleted successfully" });
   } catch (error) {
+    console.error("Error deleting report:", error);
     res.status(500).json({ message: "Error deleting report", error });
   }
 };
@@ -211,7 +267,9 @@ export const updateReport = async (req: Request, res: Response) => {
       report.location.coordinates = [location[0], location[1]];
     }
 
+    // ✅ Handle image update
     if (req.file && req.file.buffer) {
+      // Delete old image from Cloudinary if exists
       if (report.imageId) {
         try {
           await cloudinary.uploader.destroy(report.imageId);
@@ -229,6 +287,90 @@ export const updateReport = async (req: Request, res: Response) => {
 
     res.status(200).json({ message: "Report updated successfully", report });
   } catch (error) {
+    console.error("Error updating report:", error);
     res.status(500).json({ message: "Error updating report", error });
+  }
+};
+
+export const pingNearbyVolunteers = async (req: Request, res: Response) => {
+  const { id } = req.params;
+  const { radius } = req.body; // optional radius in meters, default 5000
+
+  try {
+    const report = await Report.findById(id);
+    if (!report) {
+      res.status(404).json({ message: "Report not found" });
+      return;
+    }
+
+    const c = Array.isArray(report.location) ? (report.location as any) : report.location?.coordinates;
+    if (!c || c.length < 2) {
+      res.status(400).json({ message: "Invalid location coordinates on report." });
+      return;
+    }
+    // ensure longitude and latitude are correctly used based on standard format
+    const isNewFormat = c[0] > 70;
+    const lng = Number(isNewFormat ? c[0] : c[1]);
+    const lat = Number(isNewFormat ? c[1] : c[0]);
+
+    if (isNaN(lng) || isNaN(lat)) {
+      res.status(400).json({ message: "Invalid numeric coordinates." });
+      return;
+    }
+
+    // Attempt to ensure indexes just in case (this shouldn't block, but handles missing index)
+    try {
+      await User.syncIndexes();
+    } catch (e) {
+      console.error("Index sync error:", e);
+    }
+
+    const volunteers = await User.find({
+      isVolunteer: true,
+      location: {
+        $near: {
+          $geometry: {
+            type: "Point",
+            coordinates: [lng, lat],
+          },
+          $maxDistance: Number(radius) || 5000,
+        },
+      },
+    });
+
+    if (volunteers.length === 0) {
+      res.status(200).json({ message: "No volunteers found nearby." });
+      return;
+    }
+
+    const volunteerIds = volunteers.map((v) => v.id.toString());
+    const title = `Volunteer Request: ${report.type.toUpperCase()}`;
+    const body = `A ${report.type} has been reported near your location. We need your help!`;
+    const url = `/reports/${report.id}`;
+
+    try {
+      await sendPushToUsers(volunteerIds, title, body, url);
+    } catch (pushError: any) {
+      console.error("Push notification error:", pushError);
+      // We can still return success for finding volunteers even if push fails
+      res.status(200).json({
+        message: `Found ${volunteers.length} volunteers, but push notifications failed.`,
+        pingedCount: volunteers.length,
+        pushError: pushError.message || String(pushError),
+      });
+      return;
+    }
+
+    res.status(200).json({
+      message: `Successfully pinged ${volunteers.length} volunteers.`,
+      pingedCount: volunteers.length,
+    });
+  } catch (error: any) {
+    console.error("Error pinging volunteers:", error);
+    res.status(500).json({ 
+      message: "Error pinging volunteers", 
+      error: error.message || String(error),
+      stack: process.env.NODE_ENV === "development" ? error.stack : undefined
+    });
   }
 };

@@ -1,7 +1,8 @@
 import { Request, Response } from "express";
 import PushSubscription from "../models/pushSubscriptionModel";
-import { env } from "../env";
+import webpush from "web-push";
 
+// Save a push subscription
 export const subscribe = async (req: Request, res: Response) => {
   try {
     const { endpoint, keys } = req.body;
@@ -11,6 +12,7 @@ export const subscribe = async (req: Request, res: Response) => {
       return;
     }
 
+    // Upsert: update if endpoint exists, create if not
     await PushSubscription.findOneAndUpdate(
       { endpoint },
       { endpoint, keys, userId: req.body.userId || null },
@@ -24,6 +26,7 @@ export const subscribe = async (req: Request, res: Response) => {
   }
 };
 
+// Remove a push subscription
 export const unsubscribe = async (req: Request, res: Response) => {
   try {
     const { endpoint } = req.body;
@@ -39,8 +42,9 @@ export const unsubscribe = async (req: Request, res: Response) => {
   }
 };
 
+// Get VAPID public key
 export const getVapidPublicKey = (_: Request, res: Response) => {
-  const key = env.VAPID_PUBLIC_KEY;
+  const key = process.env.VAPID_PUBLIC_KEY;
   if (!key) {
     res.status(500).json({ message: "VAPID public key not configured." });
     return;
@@ -48,17 +52,13 @@ export const getVapidPublicKey = (_: Request, res: Response) => {
   res.json({ publicKey: key });
 };
 
+/**
+ * Send a push notification to all subscribers.
+ * Called internally from alertController when a new alert is created.
+ */
 export const sendPushToAll = async (title: string, body: string, url?: string) => {
-  let webpush: any;
-  try {
-    webpush = require("web-push");
-  } catch {
-    console.warn("[Push] web-push not installed, skipping push notifications.");
-    return;
-  }
-
-  const vapidPublic = env.VAPID_PUBLIC_KEY;
-  const vapidPrivate = env.VAPID_PRIVATE_KEY;
+  const vapidPublic = process.env.VAPID_PUBLIC_KEY;
+  const vapidPrivate = process.env.VAPID_PRIVATE_KEY;
   const vapidEmail = process.env.VAPID_EMAIL || "mailto:admin@sajilo-sahayata.com";
 
   if (!vapidPublic || !vapidPrivate) {
@@ -88,6 +88,7 @@ export const sendPushToAll = async (title: string, body: string, url?: string) =
       );
       sent++;
     } catch (err: any) {
+      // If subscription expired (410 Gone), remove it
       if (err.statusCode === 410 || err.statusCode === 404) {
         await PushSubscription.deleteOne({ _id: sub._id });
       }
@@ -96,4 +97,55 @@ export const sendPushToAll = async (title: string, body: string, url?: string) =
   }
 
   console.log(`[Push] Sent: ${sent}, Failed: ${failed}, Total: ${subscriptions.length}`);
+};
+
+export const sendPushToUsers = async (userIds: string[], title: string, body: string, url?: string) => {
+  const vapidPublic = process.env.VAPID_PUBLIC_KEY;
+  const vapidPrivate = process.env.VAPID_PRIVATE_KEY;
+  const vapidEmail = process.env.VAPID_EMAIL || "mailto:admin@sajilo-sahayata.com";
+
+  if (!vapidPublic || !vapidPrivate) {
+    console.warn("[Push] VAPID keys not configured, skipping push.");
+    return;
+  }
+
+  webpush.setVapidDetails(vapidEmail, vapidPublic, vapidPrivate);
+
+  const subscriptions = await PushSubscription.find({ userId: { $in: userIds } });
+  const payload = JSON.stringify({
+    title,
+    body,
+    icon: "/logos/icon-192x192.png",
+    badge: "/logos/icon-96x96.png",
+    url: url || "/dashboard/home",
+  });
+
+  for (const sub of subscriptions) {
+    try {
+      await webpush.sendNotification(
+        { endpoint: sub.endpoint, keys: sub.keys },
+        payload
+      );
+    } catch (err: any) {
+      if (err.statusCode === 410 || err.statusCode === 404) {
+        await PushSubscription.deleteOne({ _id: sub._id });
+      }
+    }
+  }
+};
+
+export const broadcastPush = async (req: Request, res: Response) => {
+  try {
+    const { userIds, message } = req.body;
+    if (!userIds || !Array.isArray(userIds) || userIds.length === 0 || !message) {
+      res.status(400).json({ message: "userIds array and message are required." });
+      return;
+    }
+
+    await sendPushToUsers(userIds, "Admin Broadcast Alert", message, "/dashboard/home");
+    res.status(200).json({ message: `Broadcast sent to ${userIds.length} volunteers successfully.` });
+  } catch (error: any) {
+    console.error("Failed to broadcast push:", error);
+    res.status(500).json({ message: "Failed to broadcast push notification", error: error.message });
+  }
 };

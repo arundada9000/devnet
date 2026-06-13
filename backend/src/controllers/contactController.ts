@@ -1,6 +1,7 @@
 import { Request, Response } from "express";
 import ContactInfo from "../models/contactModel";
 
+// GET /api/contacts/:localGov/:department — fetch contacts for a specific location and department
 export const getContacts = async (req: Request, res: Response) => {
   try {
     const { localGov, department } = req.params;
@@ -22,6 +23,7 @@ export const getContacts = async (req: Request, res: Response) => {
   }
 };
 
+// GET /api/contacts — list all contact records
 export const getAllContacts = async (_req: Request, res: Response) => {
   try {
     const contacts = await ContactInfo.find().sort({ localGovName: 1, department: 1 });
@@ -32,6 +34,7 @@ export const getAllContacts = async (_req: Request, res: Response) => {
   }
 };
 
+// POST /api/contacts — create a new contact record
 export const createContact = async (req: Request, res: Response) => {
   try {
     const { localGovName, department, contacts } = req.body;
@@ -41,6 +44,7 @@ export const createContact = async (req: Request, res: Response) => {
       return;
     }
 
+    // Check for existing record
     const existing = await ContactInfo.findOne({
       localGovName: new RegExp(`^${localGovName}$`, "i"),
       department: new RegExp(`^${department}$`, "i"),
@@ -59,6 +63,7 @@ export const createContact = async (req: Request, res: Response) => {
   }
 };
 
+// PUT /api/contacts/:id — update a contact record
 export const updateContact = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
@@ -82,6 +87,7 @@ export const updateContact = async (req: Request, res: Response) => {
   }
 };
 
+// DELETE /api/contacts/:id — delete a contact record
 export const deleteContact = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;

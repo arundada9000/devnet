@@ -2,6 +2,11 @@ import fs from "fs";
 import path from "path";
 import * as turf from "@turf/turf";
 
+/**
+ * Shared utility for resolving GPS coordinates to a local government name.
+ * Uses the same cached GeoJSON data as the location controller.
+ */
+
 let geoJsonCache: any[] = [];
 let isCacheLoaded = false;
 
@@ -28,6 +33,10 @@ const loadGeoJsonData = () => {
   }
 };
 
+/**
+ * Given latitude and longitude, returns the matching GaPa/NaPa name.
+ * Returns "Unknown" if no match is found or coordinates are invalid.
+ */
 export function resolveGaPa(lat: number, lng: number): string {
   if (lat == null || isNaN(lat) || lng == null || isNaN(lng)) return "Unknown";
 

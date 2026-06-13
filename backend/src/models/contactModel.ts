@@ -26,6 +26,7 @@ const ContactInfoSchema: Schema = new Schema({
   contacts: { type: [ContactSchema], default: [] },
 }, { timestamps: true });
 
+// Ensure unique combination of localGovName and department
 ContactInfoSchema.index({ localGovName: 1, department: 1 }, { unique: true });
 
 export default mongoose.model<IContactInfo>("ContactInfo", ContactInfoSchema);

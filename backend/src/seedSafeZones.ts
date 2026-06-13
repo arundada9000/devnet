@@ -2,6 +2,7 @@ import mongoose from "mongoose";
 import dotenv from "dotenv";
 import SafeZone from "./models/safeZoneModel";
 
+// Load environment variables
 dotenv.config();
 
 const MONGODB_URI = process.env.MONGODB_URI;
@@ -15,7 +16,10 @@ const seedData = [
   {
     name: "Lumbini Provincial Hospital",
     type: "hospital",
-    location: { type: "Point", coordinates: [83.468, 27.7] },
+    location: {
+      type: "Point",
+      coordinates: [83.468, 27.7], // [lng, lat]
+    },
     address: "Hospital Line, Butwal",
     phone: "071-540300",
     isActive: true,
@@ -23,7 +27,10 @@ const seedData = [
   {
     name: "Area Police Office Butwal",
     type: "police",
-    location: { type: "Point", coordinates: [83.45, 27.71] },
+    location: {
+      type: "Point",
+      coordinates: [83.45, 27.71], // [lng, lat]
+    },
     address: "Rajmarg Chauraha, Butwal",
     phone: "100",
     isActive: true,
@@ -31,7 +38,10 @@ const seedData = [
   {
     name: "Lumbini Engineering College Shelter",
     type: "shelter",
-    location: { type: "Point", coordinates: [83.475, 27.68] },
+    location: {
+      type: "Point",
+      coordinates: [83.475, 27.68], // [lng, lat]
+    },
     address: "Bhalwari, Rupandehi",
     phone: "071-561030",
     isActive: true,
@@ -39,7 +49,10 @@ const seedData = [
   {
     name: "Butwal Fire Brigade",
     type: "fire_station",
-    location: { type: "Point", coordinates: [83.462, 27.705] },
+    location: {
+      type: "Point",
+      coordinates: [83.462, 27.705], // [lng, lat]
+    },
     address: "Amarpath, Butwal",
     phone: "101",
     isActive: true,
@@ -47,7 +60,10 @@ const seedData = [
   {
     name: "Devinagar Relief Distribution Center",
     type: "distribution",
-    location: { type: "Point", coordinates: [83.48, 27.69] },
+    location: {
+      type: "Point",
+      coordinates: [83.48, 27.69], // [lng, lat]
+    },
     address: "Devinagar, Butwal-11",
     phone: "9800000000",
     isActive: true,
@@ -56,12 +72,14 @@ const seedData = [
 
 async function seed() {
   try {
-    await mongoose.connect(MONGODB_URI!);
+    await mongoose.connect(MONGODB_URI as string);
     console.log("Connected to MongoDB");
 
+    // Clear existing safe zones
     await SafeZone.deleteMany({});
     console.log("Cleared existing Safe Zones");
 
+    // Insert new data
     await SafeZone.insertMany(seedData);
     console.log("Successfully seeded 5 Safe Zones!");
 

@@ -10,6 +10,7 @@ import authenticateToken from "../middlewares/authenticateToken";
 const router = Router();
 router.get("/", getAllAlerts);
 
+// All routes require authentication
 router.use(authenticateToken);
 router.post("/", createAlert);
 router.put("/:id", updateAlert);

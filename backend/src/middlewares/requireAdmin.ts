@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from "express";
-import { IUser } from "./authenticateToken";
+import { IUser } from "./authenticateToken"; // Adjust path if needed
 
 export default function requireAdmin(req: Request, res: Response, next: NextFunction) {
   const user = req.user as IUser;

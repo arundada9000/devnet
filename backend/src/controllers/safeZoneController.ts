@@ -1,6 +1,7 @@
 import { Request, Response } from "express";
 import SafeZone from "../models/safeZoneModel";
 
+// Get all active safe zones (public)
 export const getAllSafeZones = async (_: Request, res: Response) => {
   try {
     const zones = await SafeZone.find({ isActive: true }).sort({ createdAt: -1 });
@@ -10,6 +11,7 @@ export const getAllSafeZones = async (_: Request, res: Response) => {
   }
 };
 
+// Create a new safe zone (admin only)
 export const createSafeZone = async (req: Request, res: Response) => {
   try {
     const { name, type, coordinates, address, phone } = req.body;
@@ -33,6 +35,7 @@ export const createSafeZone = async (req: Request, res: Response) => {
   }
 };
 
+// Update a safe zone (admin only)
 export const updateSafeZone = async (req: Request, res: Response) => {
   try {
     const { name, type, coordinates, address, phone, isActive } = req.body;
@@ -60,6 +63,7 @@ export const updateSafeZone = async (req: Request, res: Response) => {
   }
 };
 
+// Delete a safe zone (admin only)
 export const deleteSafeZone = async (req: Request, res: Response) => {
   try {
     const deleted = await SafeZone.findByIdAndDelete(req.params.id);

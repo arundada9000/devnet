@@ -3,6 +3,7 @@ import fs from "fs";
 import path from "path";
 import * as turf from "@turf/turf";
 
+// Cache for geojson data
 let geoJsonCache: any[] = [];
 let isCacheLoaded = false;
 
@@ -66,6 +67,7 @@ export const detectLocation = (req: Request, res: Response) => {
   }
 };
 
+// GET /api/location/available — return all available location names from geojson data
 export const getAvailableLocations = (_req: Request, res: Response) => {
   try {
     loadGeoJsonData();

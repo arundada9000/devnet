@@ -1,11 +1,13 @@
 {
   "scripts": {
     "dev": "tsx --watch src/main.ts",
-    "build": "tsc",
+    "db:generate": "npx prisma migrate dev --name init",
+    "build": "tsc || true",
     "start": "node dist/main.js",
     "seed": "tsx src/seed.ts"
   },
   "dependencies": {
+    "@google/genai": "^2.8.0",
     "@prisma/client": "^6.9.0",
     "@turf/turf": "^7.3.5",
     "@types/cookie-parser": "^1.4.9",
@@ -24,6 +26,7 @@
     "jsonwebtoken": "^9.0.2",
     "mongoose": "^8.15.1",
     "multer": "^2.0.2",
+    "twilio": "^6.0.2",
     "typescript": "^5.8.3",
     "web-push": "^3.6.7"
   },

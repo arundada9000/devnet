@@ -1,6 +1,5 @@
 import { Request, Response, NextFunction } from "express";
 import jwt from "jsonwebtoken";
-import { env } from "../env";
 
 export type IUser = {
   id: string;
@@ -8,6 +7,7 @@ export type IUser = {
 };
 
 const authenticateToken = (req: Request, res: Response, next: NextFunction) => {
+  // ✅ Extract from "Authorization: Bearer <token>"
   const authHeader = req.headers["authorization"];
   const token = authHeader && authHeader.split(" ")[1];
 
@@ -18,7 +18,7 @@ const authenticateToken = (req: Request, res: Response, next: NextFunction) => {
 
   jwt.verify(
     token,
-    env.JWT_SECRET,
+    process.env.JWT_SECRET || "secret",
     (err: Error | null, decoded: any) => {
       if (err) {
         res.status(403).json({ message: "Invalid or expired token" });

@@ -2,6 +2,7 @@ import { Request, Response } from "express";
 import Alert from "../models/alertModel";
 import { sendPushToAll } from "./pushController";
 
+// Create a new alert
 export const createAlert = async (req: Request, res: Response) => {
   try {
     const { title, description, type, location } = req.body;
@@ -15,6 +16,7 @@ export const createAlert = async (req: Request, res: Response) => {
       createdBy,
     });
 
+    // Send push notification to all subscribers (non-blocking)
     try {
       await sendPushToAll(
         `⚠️ ${title}`,
@@ -32,6 +34,7 @@ export const createAlert = async (req: Request, res: Response) => {
   }
 };
 
+// Get all alerts
 export const getAllAlerts = async (_: Request, res: Response) => {
   try {
     const alerts = await Alert.find().sort({ timestamp: -1 });
@@ -41,6 +44,7 @@ export const getAllAlerts = async (_: Request, res: Response) => {
   }
 };
 
+// Update alert
 export const updateAlert = async (req: Request, res: Response) => {
   try {
     const updated = await Alert.findByIdAndUpdate(req.params.id, req.body, {
@@ -58,6 +62,7 @@ export const updateAlert = async (req: Request, res: Response) => {
   }
 };
 
+// Delete alert
 export const deleteAlert = async (req: Request, res: Response) => {
   try {
     const deleted = await Alert.findByIdAndDelete(req.params.id);
