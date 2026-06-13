@@ -20,21 +20,29 @@ import MapSkeleton from "../../components/MapSkeleton";
 
 function FlyToFocusedIncident({ incident }) {
   const map = useMap();
+
   useEffect(() => {
     if (incident) {
-      map.flyTo([incident.lat, incident.lng], 19, { duration: 1.5 });
+      map.flyTo([incident.lat, incident.lng], 19, {
+        duration: 1.5,
+      });
     }
   }, [incident, map]);
+
   return null;
 }
 
 function FlyToUserLocation({ location }) {
   const map = useMap();
+
   useEffect(() => {
     if (location) {
-      map.flyTo(location, 16, { duration: 1.5 });
+      map.flyTo(location, 16, {
+        duration: 1.5,
+      });
     }
   }, [location, map]);
+
   return null;
 }
 
@@ -88,7 +96,9 @@ const getIcon = (type) =>
 const getFocusedIcon = (type) =>
   new L.DivIcon({
     className: "focused-marker-glow",
-    html: `<div class='relative'><img src="/icons/map-icons-red/${type}.svg" class="animate-bounce-glow w-12 h-12" /></div>`,
+    html: `<div class='relative'>
+             <img src="/icons/map-icons-red/${type}.svg" class="animate-bounce-glow w-12 h-12" />
+           </div>`,
     iconSize: [48, 48],
     iconAnchor: [24, 48],
     popupAnchor: [0, -40],
@@ -100,7 +110,8 @@ const getSafeZoneIcon = (type) => {
   return new L.DivIcon({
     className: "safe-zone-marker",
     html: `<div style="background:${color};width:28px;height:28px;border-radius:50%;border:3px solid white;box-shadow:0 2px 8px rgba(0,0,0,0.3);display:flex;align-items:center;justify-content:center;">
-      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></div>`,
+             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+           </div>`,
     iconSize: [28, 28],
     iconAnchor: [14, 14],
     popupAnchor: [0, -14],
@@ -110,11 +121,14 @@ const getSafeZoneIcon = (type) => {
 function LocateButton({ onLocate }) {
   const { t } = useTranslation();
   const map = useMap();
+
   const locate = () => {
     map.locate({ setView: false });
     map.once("locationfound", (e) => {
       const latlng = [e.latlng.lat, e.latlng.lng];
-      map.flyTo(latlng, 16, { duration: 1.5 });
+      map.flyTo(latlng, 16, {
+        duration: 1.5,
+      });
       onLocate(e.latlng);
     });
   };
@@ -191,7 +205,10 @@ const MapPage = () => {
 
   const visibleIncidents = incidents.filter((i) => selectedTypes[i.type]);
 
-  if (loading) return <MapSkeleton />;
+  // Show skeleton while loading
+  if (loading) {
+    return <MapSkeleton />;
+  }
 
   return (
     <motion.div
@@ -201,40 +218,73 @@ const MapPage = () => {
       transition={{ duration: 0.3 }}
     >
       <div className="relative min-h-screen bg-gray-50 overflow-hidden flex flex-col">
+        {/* Floating Top Controls (Glassmorphism) */}
         <div className="absolute top-4 left-0 right-0 z-50 px-4 flex flex-col sm:flex-row gap-3 justify-between items-start sm:items-center pointer-events-none">
-          <div className="bg-white/90 backdrop-blur-md shadow-lg border border-white/50 rounded-2xl px-5 py-3 pointer-events-auto flex items-center gap-2">
+          {/* Header Title */}
+          <div className="bg-white/90 backdrop-blur-md shadow-lg shadow-blue-900/5 border border-white/50 rounded-2xl px-5 py-3 pointer-events-auto flex items-center gap-2">
             <div className="w-8 h-8 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center">
               <MapPin size={18} />
             </div>
-            <h1 className="text-lg font-extrabold text-slate-800 tracking-tight">{t("map.title")}</h1>
+            <h1 className="text-lg font-extrabold text-slate-800 tracking-tight">
+              {t("map.title")}
+            </h1>
           </div>
+
           <div className="flex items-center gap-3 pointer-events-auto ml-auto">
+            {/* Filter Dropdown */}
             <div className="relative">
-              <button onClick={() => setDropdownOpen((prev) => !prev)}
-                className="flex items-center gap-2 bg-white/90 backdrop-blur-md shadow-lg border border-white/50 px-4 py-3 rounded-2xl text-sm font-bold text-slate-700 hover:bg-white hover:shadow-xl transition-all">
+              <button
+                onClick={() => setDropdownOpen((prev) => !prev)}
+                className="flex items-center gap-2 bg-white/90 backdrop-blur-md shadow-lg shadow-gray-900/5 border border-white/50 px-4 py-3 rounded-2xl text-sm font-bold text-slate-700 hover:bg-white hover:shadow-xl hover:-translate-y-0.5 transition-all"
+              >
                 <Layers size={18} className="text-blue-500" />
                 <span>{t("map.filterLabel")}</span>
-                <ChevronDown size={16} className={`transition-transform ${dropdownOpen ? "rotate-180" : ""}`} />
+                <ChevronDown size={16} className={`transition-transform duration-300 ${dropdownOpen ? "rotate-180" : ""}`} />
               </button>
+
               <AnimatePresence>
                 {dropdownOpen && (
-                  <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 10 }}
-                    className="absolute right-0 top-14 w-64 bg-white/95 backdrop-blur-xl border border-gray-100 shadow-2xl rounded-2xl p-4 space-y-3 origin-top-right">
-                    <div className="space-y-1.5 max-h-60 overflow-y-auto pr-2">
+                  <motion.div
+                    initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                    transition={{ type: "spring", stiffness: 400, damping: 25 }}
+                    className="absolute right-0 top-14 w-64 bg-white/95 backdrop-blur-xl border border-gray-100 shadow-2xl rounded-2xl p-4 space-y-3 origin-top-right"
+                  >
+                    <div className="space-y-1.5 max-h-60 overflow-y-auto custom-scrollbar pr-2">
                       {incidentTypesConfig.map((type) => (
-                        <label key={type.key} className="flex items-center gap-3 p-2 rounded-xl hover:bg-gray-50 cursor-pointer">
-                          <input type="checkbox" className="w-4 h-4 rounded text-blue-600 focus:ring-blue-500 border-gray-300"
-                            checked={selectedTypes[type.key]} onChange={() => toggleType(type.key)} />
-                          <img src={`/icons/map-icons-red/${type.key}.svg`} alt={type.key} className="w-6 h-6" />
-                          <span className="text-sm font-semibold text-slate-700 capitalize">{t(`incidentTypes.${type.key}`)}</span>
+                        <label
+                          key={type.key}
+                          className="flex items-center gap-3 p-2 rounded-xl hover:bg-gray-50 cursor-pointer transition-colors"
+                        >
+                          <input
+                            type="checkbox"
+                            className="w-4 h-4 rounded text-blue-600 focus:ring-blue-500 border-gray-300"
+                            checked={selectedTypes[type.key]}
+                            onChange={() => toggleType(type.key)}
+                          />
+                          <img
+                            src={`/icons/map-icons-red/${type.key}.svg`}
+                            alt={type.key}
+                            className="w-6 h-6 drop-shadow-sm"
+                          />
+                          <span className="text-sm font-semibold text-slate-700 capitalize">
+                            {t(`incidentTypes.${type.key}`)}
+                          </span>
                         </label>
                       ))}
                     </div>
                     <div className="pt-3 border-t border-gray-100 flex gap-2">
-                      <button onClick={() => setAll(true)} className="flex-1 flex items-center justify-center gap-1.5 bg-blue-50 hover:bg-blue-100 text-blue-700 text-xs font-bold px-3 py-2.5 rounded-xl">
+                      <button
+                        onClick={() => setAll(true)}
+                        className="flex-1 flex justify-center items-center gap-1.5 bg-blue-50 hover:bg-blue-100 text-blue-700 text-xs font-bold px-3 py-2.5 rounded-xl transition-colors"
+                      >
                         <CheckCircle size={14} /> {t("map.selectAllBtn")}
                       </button>
-                      <button onClick={() => setAll(false)} className="flex-1 flex items-center justify-center gap-1.5 bg-red-50 hover:bg-red-100 text-red-600 text-xs font-bold px-3 py-2.5 rounded-xl">
+                      <button
+                        onClick={() => setAll(false)}
+                        className="flex-1 flex justify-center items-center gap-1.5 bg-red-50 hover:bg-red-100 text-red-600 text-xs font-bold px-3 py-2.5 rounded-xl transition-colors"
+                      >
                         <XCircle size={14} /> {t("map.clearAllBtn")}
                       </button>
                     </div>
@@ -242,86 +292,175 @@ const MapPage = () => {
                 )}
               </AnimatePresence>
             </div>
-            <button onClick={() => setShowSafeZones((prev) => !prev)}
-              className={`flex items-center gap-2 px-4 py-3 rounded-2xl shadow-lg border backdrop-blur-md text-sm font-bold transition-all ${
-                showSafeZones ? "bg-emerald-500 text-white border-emerald-400" : "bg-white/90 text-slate-700 border-white/50 hover:bg-white"
-              }`}>
+
+            {/* Safe Zones Toggle */}
+            <button
+              onClick={() => setShowSafeZones((prev) => !prev)}
+              className={`flex items-center gap-2 px-4 py-3 rounded-2xl shadow-lg border backdrop-blur-md text-sm font-bold transition-all duration-300 hover:-translate-y-0.5 ${
+                showSafeZones
+                  ? "bg-emerald-500 text-white border-emerald-400 shadow-emerald-500/20"
+                  : "bg-white/90 text-slate-700 border-white/50 shadow-gray-900/5 hover:bg-white"
+              }`}
+            >
               <Shield size={18} className={showSafeZones ? "text-white" : "text-emerald-500"} />
               {t("map.safeZones", "Safe Zones")}
             </button>
           </div>
         </div>
 
-        <MapContainer center={position} zoom={13} scrollWheelZoom={true} zoomControl={true}
-          whenCreated={(mapInstance) => { mapRef.current = mapInstance; }}
-          style={{ height: "80vh", width: "100%" }} className="z-0">
-          {focusedIncident && <FlyToFocusedIncident incident={focusedIncident} />}
-          {!focusedIncident && userLocation && <FlyToUserLocation location={userLocation} />}
-          <TileLayer attribution='&copy; CARTO' url="https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png" />
-          {userLocation && <Marker position={userLocation}><Popup>{t("map.youAreHere")}</Popup></Marker>}
+        <MapContainer
+          center={position}
+          zoom={13}
+          scrollWheelZoom={true}
+          zoomControl={true}
+          whenCreated={(mapInstance) => {
+            mapRef.current = mapInstance;
+          }}
+          style={{ height: "80vh", width: "100%" }}
+          className="z-0"
+        >
+          {focusedIncident && (
+            <FlyToFocusedIncident incident={focusedIncident} />
+          )}
+          {!focusedIncident && userLocation && (
+            <FlyToUserLocation location={userLocation} />
+          )}
+
+          <TileLayer
+            attribution='&copy; <a href="https://carto.com/">CARTO</a>'
+            url="https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png"
+          />
+
+          {userLocation && (
+            <Marker position={userLocation}>
+              <Popup>{t("map.youAreHere")}</Popup>
+            </Marker>
+          )}
 
           <MarkerClusterGroup>
             <AnimatePresence>
               {visibleIncidents.length === 0 && (
-                <div className="absolute top-40 left-1/2 -translate-x-1/2 bg-white text-gray-600 border rounded shadow px-4 py-2 z-50">
+                <motion.div
+                  key="no-results"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  transition={{ duration: 0.5 }}
+                  className="absolute top-40 left-1/2 transform -translate-x-1/2 bg-white text-gray-600 border rounded shadow px-4 py-2 z-50"
+                >
                   {t("map.noIncidents")}
-                </div>
+                </motion.div>
               )}
+
               {visibleIncidents.map((incident, index) => {
                 const theme = getIncidentTheme(incident.type);
                 return (
-                  <Marker key={incident.id}
-                    position={[incident.lat, incident.lng]}
-                    icon={focusedIncident?.id === incident.id ? getFocusedIcon(incident.type) : getIcon(incident.type)}>
-                    <Tooltip direction="top" offset={[0, -20]} opacity={1}>{incident.title}</Tooltip>
-                    <Popup className="premium-popup">
-                      <div className="w-[220px]">
-                        <div className={`bg-gradient-to-r ${theme.gradient} p-4 rounded-t-xl text-white relative overflow-hidden`}>
-                          <div className="absolute -right-4 -top-4 opacity-20">
-                            <img src={`/icons/map-icons-red/${incident.type}.svg`} alt="" className="w-20 h-20 filter invert" />
+                  <motion.div
+                    key={incident.id}
+                    initial={{ opacity: 0, scale: 0.5, y: -10 }}
+                    animate={{ opacity: 1, scale: 1, y: 0 }}
+                    exit={{ opacity: 0, scale: 0.5, y: -10 }}
+                    transition={{ duration: 0.3, delay: index * 0.04 }}
+                  >
+                    <Marker
+                      position={[incident.lat, incident.lng]}
+                      icon={
+                        focusedIncident?.id === incident.id
+                          ? getFocusedIcon(incident.type)
+                          : getIcon(incident.type)
+                      }
+                    >
+                      <Tooltip direction="top" offset={[0, -20]} opacity={1}>
+                        {incident.title}
+                      </Tooltip>
+
+                      <Popup className="premium-popup">
+                        <div className="w-[220px]">
+                          {/* Header */}
+                          <div className={`bg-gradient-to-r ${theme.gradient} p-4 rounded-t-xl text-white relative overflow-hidden`}>
+                            <div className="absolute -right-4 -top-4 opacity-20">
+                              <img src={`/icons/map-icons-red/${incident.type}.svg`} alt="" className="w-20 h-20 filter invert" />
+                            </div>
+                            <div className="relative z-10">
+                              <span className="bg-black/20 px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider backdrop-blur-sm mb-2 inline-block">
+                                {t(`incidentTypes.${incident.type}`)}
+                              </span>
+                              <h3 className="font-bold text-sm leading-tight text-white mb-1 drop-shadow-sm">{incident.title}</h3>
+                              <p className={`text-xs ${theme.text} flex items-center gap-1`}>
+                                <Info size={12} /> {incident.time}
+                              </p>
+                            </div>
                           </div>
-                          <div className="relative z-10">
-                            <span className="bg-black/20 px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider backdrop-blur-sm mb-2 inline-block">
-                              {t(`incidentTypes.${incident.type}`)}
-                            </span>
-                            <h3 className="font-bold text-sm leading-tight text-white mb-1 drop-shadow-sm">{incident.title}</h3>
-                            <p className={`text-xs ${theme.text} flex items-center gap-1`}><Info size={12} /> {incident.time}</p>
+                          {/* Body */}
+                          <div className="p-4 bg-white rounded-b-xl flex justify-center">
+                            <button
+                              onClick={() => {
+                                const destination = `${incident.lat},${incident.lng}`;
+                                const url = `https://www.google.com/maps/dir//${destination}`;
+                                window.open(url, "_blank");
+                              }}
+                              className={`w-full flex justify-center items-center gap-2 font-bold py-2.5 rounded-lg transition-all duration-200 shadow-sm active:scale-95 ${theme.btn}`}
+                            >
+                              <Navigation size={16} />
+                              {t("map.showPath")}
+                            </button>
                           </div>
                         </div>
-                        <div className="p-4 bg-white rounded-b-xl flex justify-center">
-                          <button onClick={() => window.open(`https://www.google.com/maps/dir//${incident.lat},${incident.lng}`, "_blank")}
-                            className={`w-full flex items-center justify-center gap-2 font-bold py-2.5 rounded-lg transition-all shadow-sm active:scale-95 ${theme.btn}`}>
-                            <Navigation size={16} /> {t("map.showPath")}
-                          </button>
-                        </div>
-                      </div>
-                    </Popup>
-                  </Marker>
+                      </Popup>
+                    </Marker>
+                  </motion.div>
                 );
               })}
             </AnimatePresence>
           </MarkerClusterGroup>
 
+          {/* Safe Zone Markers */}
           {showSafeZones && safeZones.map((zone) => {
             const coords = zone.location?.coordinates;
             if (!coords || coords.length < 2) return null;
-            const lat = coords[0] > 70 ? coords[1] : coords[0];
-            const lng = coords[0] > 70 ? coords[0] : coords[1];
+            // Normalize coordinates (same heuristic as Home.jsx)
+            const isNewFormat = coords[0] > 70;
+            const lat = isNewFormat ? coords[1] : coords[0];
+            const lng = isNewFormat ? coords[0] : coords[1];
+
             return (
-              <Marker key={zone._id} position={[lat, lng]} icon={getSafeZoneIcon(zone.type)}>
-                <Tooltip direction="top" offset={[0, -10]} opacity={1}>{zone.name}</Tooltip>
+              <Marker
+                key={zone._id}
+                position={[lat, lng]}
+                icon={getSafeZoneIcon(zone.type)}
+              >
+                <Tooltip direction="top" offset={[0, -10]} opacity={1}>
+                  {zone.name}
+                </Tooltip>
                 <Popup className="premium-popup">
                   <div className="w-[220px]">
+                    {/* Header */}
                     <div className={`bg-gradient-to-r ${getSafeZoneTheme(zone.type).gradient} p-4 rounded-t-xl text-white relative overflow-hidden`}>
-                      <div className="absolute -right-4 -bottom-4 opacity-20"><Shield size={80} /></div>
-                      <h3 className="font-bold text-sm text-white drop-shadow-sm">{zone.name}</h3>
+                      <div className="absolute -right-4 -bottom-4 opacity-20">
+                        <Shield size={80} />
+                      </div>
+                      <div className="relative z-10">
+                        <span className="bg-black/20 px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider backdrop-blur-sm mb-2 inline-block">
+                          {zone.type?.replace("_", " ")}
+                        </span>
+                        <h3 className="font-bold text-sm leading-tight text-white drop-shadow-sm">{zone.name}</h3>
+                      </div>
                     </div>
+                    {/* Body */}
                     <div className="p-4 bg-white rounded-b-xl space-y-3">
-                      {zone.address && <p className="text-xs text-gray-600">{zone.address}</p>}
+                      {zone.address && (
+                        <div className="flex items-start gap-2 text-gray-600">
+                          <MapPin size={14} className={`mt-0.5 flex-shrink-0 ${getSafeZoneTheme(zone.type).icon}`} />
+                          <span className="text-xs font-medium leading-relaxed">{zone.address}</span>
+                        </div>
+                      )}
                       {zone.phone && (
-                        <a href={`tel:${zone.phone}`}
-                          className={`w-full flex items-center justify-center gap-2 font-bold py-2.5 rounded-lg transition-all shadow-sm border active:scale-95 ${getSafeZoneTheme(zone.type).btn}`}>
-                          <Phone size={14} /> {zone.phone}
+                        <a
+                          href={`tel:${zone.phone}`}
+                          className={`w-full flex justify-center items-center gap-2 font-bold py-2.5 rounded-lg transition-all duration-200 shadow-sm border active:scale-95 ${getSafeZoneTheme(zone.type).btn}`}
+                        >
+                          <Phone size={14} />
+                          {t("map.call", "Call")} {zone.phone}
                         </a>
                       )}
                     </div>
@@ -331,7 +470,9 @@ const MapPage = () => {
             );
           })}
 
-          <LocateButton onLocate={(pos) => setUserLocation([pos.lat, pos.lng])} />
+          <LocateButton
+            onLocate={(pos) => setUserLocation([pos.lat, pos.lng])}
+          />
         </MapContainer>
       </div>
     </motion.div>
@@ -339,3 +480,4 @@ const MapPage = () => {
 };
 
 export default MapPage;
+
