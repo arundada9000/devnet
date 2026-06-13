@@ -1,7 +1,7 @@
 import { useTranslation } from "react-i18next";
 
 const statusColors = {
-  pending: "bg-blue-500",
+  status: "bg-blue-500",
   "in progress": "bg-yellow-500",
   resolved: "bg-green-500",
   rejected: "bg-red-500",
@@ -30,8 +30,19 @@ const ReportCard = ({ title, location, id, time, status, icon, onView }) => {
         </div>
       </div>
       <div className="flex flex-col items-end space-y-2">
-        <span className={`text-white text-xs px-2 py-[2px] rounded-full capitalize ${statusColors[status.toLowerCase()]}`}>{status}</span>
-        <button onClick={onView} className="text-xs bg-gray-200 hover:bg-gray-300 px-3 py-1 rounded">{t("reportCard.viewReports")}</button>
+        <span
+          className={`text-white text-xs px-2 py-[2px] rounded-full capitalize ${
+            statusColors[status.toLowerCase()]
+          }`}
+        >
+          {status}
+        </span>
+        <button
+          onClick={onView}
+          className="text-xs bg-gray-200 hover:bg-gray-300 px-3 py-1 rounded"
+        >
+          {t("reportCard.viewReports")}
+        </button>
       </div>
     </div>
   );

@@ -32,10 +32,10 @@ export default function ReportsByStatusChart({ data }) {
           statusCounts.solved,
         ],
         backgroundColor: [
-          "#facc15",
-          "#3b82f6",
-          "#a855f7",
-          "#22c55e",
+          "#facc15", // yellow
+          "#3b82f6", // blue
+          "#a855f7", // purple
+          "#22c55e", // green
         ],
         borderWidth: 1,
       },
