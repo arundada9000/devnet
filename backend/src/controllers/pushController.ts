@@ -1,6 +1,7 @@
 import { Request, Response } from "express";
 import PushSubscription from "../models/pushSubscriptionModel";
 import webpush from "web-push";
+import jwt from "jsonwebtoken";
 
 // Save a push subscription
 export const subscribe = async (req: Request, res: Response) => {
@@ -12,10 +13,25 @@ export const subscribe = async (req: Request, res: Response) => {
       return;
     }
 
+    // Try to get userId from body, or extract from JWT token if present
+    let userId = req.body.userId || null;
+    if (!userId) {
+      const authHeader = req.headers["authorization"];
+      const token = authHeader && authHeader.split(" ")[1];
+      if (token) {
+        try {
+          const decoded = jwt.verify(token, process.env.JWT_SECRET || "secret") as any;
+          userId = decoded.id || null;
+        } catch {
+          // Token invalid/expired — just proceed without userId
+        }
+      }
+    }
+
     // Upsert: update if endpoint exists, create if not
     await PushSubscription.findOneAndUpdate(
       { endpoint },
-      { endpoint, keys, userId: req.body.userId || null },
+      { endpoint, keys, userId },
       { upsert: true, new: true }
     );
 

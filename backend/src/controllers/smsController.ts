@@ -95,7 +95,7 @@ export const handleIncomingSms = async (req: Request, res: Response) => {
 
     const title = `SMS Alert: ${type.toUpperCase()}`;
     const pushBody = `A ${type} has been reported via SMS near ${localGovName}.`;
-    const url = `/reports/${report.id}`;
+    const url = `/dashboard/map?focusId=${report.id}&lat=${finalLat}&lng=${finalLng}&title=${encodeURIComponent("SMS Report: " + type)}&type=${type}`;
     
     await sendPushToAll(title, pushBody, url).catch((e) => console.error("Push failed:", e));
 

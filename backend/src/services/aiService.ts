@@ -133,3 +133,43 @@ Extract the incident type and any mentioned location.
     return null;
   }
 };
+
+export const translateWebReport = async (text: string) => {
+  const currentAi = getAI();
+  if (!currentAi) return null;
+
+  try {
+    const prompt = `
+You are an emergency dispatcher AI. A user submitted a web report with the following description: "${text}".
+The text may be in any language (e.g., Nepali, Bhojpuri, Maithili, English, Hindi).
+Translate the emergency description to English. 
+Return a JSON object containing the translated description and the original text.
+`;
+
+    const result = await currentAi.models.generateContent({
+      model: "gemini-2.5-flash",
+      contents: [{ role: "user", parts: [{ text: prompt }] }],
+      config: { 
+        responseMimeType: "application/json",
+        responseSchema: {
+          type: "OBJECT",
+          properties: {
+            description: { type: "STRING", description: "The clean, concise description of the emergency translated to English" },
+            rawDescription: { type: "STRING", description: "The exact, raw original text sent by the user in its native language" }
+          },
+          required: ["description", "rawDescription"]
+        }
+      }
+    });
+
+    const output = result.text;
+    if (!output) return null;
+
+    return JSON.parse(output);
+
+  } catch (error) {
+    console.error("AI Web parse failed:", error);
+    return null;
+  }
+};
+

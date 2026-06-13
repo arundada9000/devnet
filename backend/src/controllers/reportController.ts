@@ -5,7 +5,7 @@ import relativeTime from "dayjs/plugin/relativeTime";
 import { resolveGaPa } from "../utils/resolveGaPa";
 import { sendPushToUsers } from "./pushController";
 import User from "../models/userModel";
-import { analyzeDisasterImage } from "../services/aiService";
+import { analyzeDisasterImage, translateWebReport } from "../services/aiService";
 
 import { v2 as cloudinary } from "cloudinary";
 
@@ -89,9 +89,23 @@ export const createReport = async (req: Request, res: Response) => {
       aiAnalysis = await analyzeDisasterImage(imageUrl || "", type, req.file?.buffer, req.file?.mimetype);
     }
 
+    let finalDescription = description;
+    let rawDescription = description;
+    
+    try {
+      const translation = await translateWebReport(description);
+      if (translation && translation.description) {
+        finalDescription = translation.description;
+        rawDescription = translation.rawDescription || description;
+      }
+    } catch (e) {
+      console.error("Translation failed during web report creation:", e);
+    }
+
     const report = new Report({
       type,
-      description,
+      description: finalDescription,
+      rawDescription,
       location: { coordinates: parsedLocation },
       localGovName,
       imageUrl,
@@ -294,7 +308,7 @@ export const updateReport = async (req: Request, res: Response) => {
 
 export const pingNearbyVolunteers = async (req: Request, res: Response) => {
   const { id } = req.params;
-  const { radius } = req.body; // optional radius in meters, default 5000
+  const { radius } = req.body || {}; // optional radius in meters, default 5000
 
   try {
     const report = await Report.findById(id);
@@ -346,7 +360,7 @@ export const pingNearbyVolunteers = async (req: Request, res: Response) => {
     const volunteerIds = volunteers.map((v) => v.id.toString());
     const title = `Volunteer Request: ${report.type.toUpperCase()}`;
     const body = `A ${report.type} has been reported near your location. We need your help!`;
-    const url = `/reports/${report.id}`;
+    const url = `/dashboard/map?focusId=${report.id}&lat=${lat}&lng=${lng}&title=${encodeURIComponent(report.title || "Emergency")}&type=${report.type}`;
 
     try {
       await sendPushToUsers(volunteerIds, title, body, url);
@@ -368,7 +382,7 @@ export const pingNearbyVolunteers = async (req: Request, res: Response) => {
   } catch (error: any) {
     console.error("Error pinging volunteers:", error);
     res.status(500).json({ 
-      message: "Error pinging volunteers", 
+      message: `Error pinging volunteers: ${error.message || String(error)}`, 
       error: error.message || String(error),
       stack: process.env.NODE_ENV === "development" ? error.stack : undefined
     });
