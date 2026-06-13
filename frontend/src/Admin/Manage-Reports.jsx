@@ -86,10 +86,17 @@ export default function Reports() {
     if (!viewItem) return;
     setPinging(true);
     try {
+      console.log("[Ping] Sending to:", `/reports/${viewItem._id}/ping-volunteers`);
+      console.log("[Ping] Token:", localStorage.getItem("token")?.substring(0, 20) + "...");
       const { data } = await API.post(`/reports/${viewItem._id}/ping-volunteers`);
+      console.log("[Ping] Success:", data);
       toast.success(data.message || t("admin.manageReports.pingSuccess", "Successfully pinged volunteers."));
     } catch (err) {
-      toast.error(err.response?.data?.message || t("admin.manageReports.pingError", "Failed to ping volunteers."));
+      console.error("[Ping] Error status:", err.response?.status);
+      console.error("[Ping] Error body:", err.response?.data);
+      console.error("[Ping] Full error:", err);
+      const errorMsg = err.response?.data?.message || err.message || t("admin.manageReports.pingError", "Failed to ping volunteers.");
+      toast.error(errorMsg);
     } finally {
       setPinging(false);
     }

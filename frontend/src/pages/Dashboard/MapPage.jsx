@@ -148,8 +148,20 @@ const MapPage = () => {
   const [safeZones, setSafeZones] = useState([]);
   const [showSafeZones, setShowSafeZones] = useState(false);
   const [loading, setLoading] = useState(true);
-  const { state } = useLocation();
-  const focusedIncident = state?.focus;
+  const { state, search } = useLocation();
+  const searchParams = new URLSearchParams(search);
+
+  let focusedIncident = state?.focus;
+
+  if (!focusedIncident && searchParams.get("focusId")) {
+    focusedIncident = {
+      id: searchParams.get("focusId"),
+      lat: parseFloat(searchParams.get("lat")),
+      lng: parseFloat(searchParams.get("lng")),
+      title: searchParams.get("title"),
+      type: searchParams.get("type"),
+    };
+  }
 
   useEffect(() => {
     async function fetchData() {

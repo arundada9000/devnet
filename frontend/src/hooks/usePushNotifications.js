@@ -74,8 +74,14 @@ export default function usePushNotifications() {
         const existingSub = await registration.pushManager.getSubscription();
 
         if (existingSub) {
-          // Already subscribed in the browser
+          // Already subscribed in the browser — re-register with backend
+          // to ensure userId is linked (it may have been null before)
           setIsSubscribed(true);
+          try {
+            await API.post("/push/subscribe", existingSub.toJSON());
+          } catch {
+            // Non-critical: subscription already exists, just couldn't update userId
+          }
           return;
         }
 
