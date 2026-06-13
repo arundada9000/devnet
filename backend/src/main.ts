@@ -1,9 +1,16 @@
 import express from "express";
-import cors from "cors";
+import connectDB from "./config/db";
+import authRoutes from "./routes/authRoutes";
+import alertRoutes from "./routes/alertRoutes";
+import reportRoutes from "./routes/reportRoutes";
+import contactRoutes from "./routes/contactRoutes";
+import locationRoutes from "./routes/locationRoutes";
+import pushRoutes from "./routes/pushRoutes";
+import safeZoneRoutes from "./routes/safeZoneRoutes";
 import cookieParser from "cookie-parser";
 import dotenv from "dotenv";
+import cors from "cors";
 import dns from "dns";
-import { env } from "./env";
 
 dns.setServers(["1.1.1.1", "8.8.8.8"]);
 
@@ -15,7 +22,7 @@ app.use(
   cors({
     origin: (origin, callback) => {
       const allowedOrigins = [
-        env.CLIENT_URL,
+        process.env.CLIENT_URL || "http://localhost:5173",
         "http://localhost:5174",
         "http://localhost:5175",
       ];
@@ -32,6 +39,16 @@ app.use(
 app.use(express.json());
 app.use(cookieParser());
 
+connectDB();
+
+app.use("/api/auth", authRoutes);
+app.use("/api", reportRoutes);
+app.use("/api/alerts", alertRoutes);
+app.use("/api/contacts", contactRoutes);
+app.use("/api/location", locationRoutes);
+app.use("/api/push", pushRoutes);
+app.use("/api/safe-zones", safeZoneRoutes);
+
 app.get("/api/health", (_req, res) => {
   res.json({ success: true, message: "Sajilo Sahayata API is running" });
 });
@@ -44,7 +61,7 @@ app.use((err: any, _req: express.Request, res: express.Response, _next: express.
 });
 
 if (process.env.NODE_ENV !== "production" || process.env.IS_LOCAL === "true") {
-  const PORT = env.PORT || 3000;
+  const PORT = process.env.PORT || 3000;
   app.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`);
   });
