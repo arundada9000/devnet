@@ -35,7 +35,10 @@ export default function ManageAlerts() {
 
   useEffect(() => { if (adminLocation && !locationFilter) setLocationFilter(adminLocation); }, [adminLocation]);
 
-  const { data: alerts = [], isLoading: loading } = useQuery({ queryKey: ["alerts"], queryFn: () => API.get("/alerts").then((res) => res.data) });
+  const { data: alerts = [], isLoading: loading } = useQuery({
+    queryKey: ["alerts"],
+    queryFn: () => API.get("/alerts").then((res) => res.data),
+  });
 
   const filtered = useMemo(() => {
     let data = [...alerts];
@@ -52,21 +55,34 @@ export default function ManageAlerts() {
 
   const handleDelete = async (id) => {
     if (!confirm(t("admin.sendAlerts.deleteConfirm"))) return;
-    try { await API.delete(`/alerts/${id}`); toast.success(t("admin.sendAlerts.deleted")); queryClient.invalidateQueries({ queryKey: ["alerts"] }); }
+    try { 
+      await API.delete(`/alerts/${id}`); 
+      toast.success(t("admin.sendAlerts.deleted")); 
+      queryClient.invalidateQueries({ queryKey: ["alerts"] });
+    }
     catch { toast.error(t("admin.sendAlerts.deleteFailed")); }
   };
 
   const handleModalSubmit = async (data) => {
     setSubmitting(true);
     try {
-      if (selectedAlert) await API.put(`/alerts/${selectedAlert._id}`, data);
-      else await API.post("/alerts", data);
-      setSelectedAlert(null); setShowModal(false);
+      if (selectedAlert) {
+        await API.put(`/alerts/${selectedAlert._id}`, data);
+      } else {
+        await API.post("/alerts", data);
+      }
+      setSelectedAlert(null);
+      setShowModal(false);
       toast.success(selectedAlert ? t("admin.sendAlerts.updated") : t("admin.sendAlerts.created"));
       queryClient.invalidateQueries({ queryKey: ["alerts"] });
-    } catch { toast.error(t("admin.sendAlerts.failed")); }
-    finally { setSubmitting(false); }
+    } catch {
+      toast.error(t("admin.sendAlerts.failed"));
+    } finally {
+      setSubmitting(false);
+    }
   };
+
+  const clearAll = () => { setSearch(""); setTypeFilter(""); setLocationFilter(""); };
 
   return (
     <>
@@ -78,21 +94,23 @@ export default function ManageAlerts() {
           <span className="text-sm text-gray-500 bg-gray-100 px-3 py-1 rounded-full font-medium">{filtered.length} {t("admin.sendAlerts.alertCount")}</span>
         </div>
         <div className="flex items-center gap-2">
-          <button onClick={() => exportToCSV(filtered, "alerts")} disabled={filtered.length === 0}
-            className="flex items-center gap-2 bg-white border border-gray-200 text-gray-700 hover:bg-gray-50 hover:-translate-y-0.5 hover:shadow-md px-4 py-2 rounded-lg shadow-sm font-medium text-sm transition-all disabled:opacity-50">
+          <button 
+            onClick={() => exportToCSV(filtered, "alerts")}
+            disabled={filtered.length === 0}
+            className="flex items-center gap-2 bg-white border border-gray-200 text-gray-700 hover:bg-gray-50 hover:-translate-y-0.5 hover:shadow-md px-4 py-2 rounded-lg shadow-sm font-medium text-sm transition-all focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1 active:scale-95 disabled:opacity-50 disabled:hover:translate-y-0 disabled:hover:shadow-sm"
+          >
             <Download size={16} /> {t("admin.sendAlerts.exportCsv")}
           </button>
-          <button onClick={() => { setSelectedAlert(null); setShowModal(true); }}
-            className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 hover:-translate-y-0.5 hover:shadow-md text-white px-4 py-2 rounded-lg shadow-sm text-sm font-medium transition-all active:scale-95">
+          <button onClick={() => { setSelectedAlert(null); setShowModal(true); }} className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 hover:-translate-y-0.5 hover:shadow-md text-white px-4 py-2 rounded-lg shadow-sm text-sm font-medium transition-all focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1 active:scale-95">
             <Plus size={16} /> {t("admin.sendAlerts.createAlert")}
           </button>
         </div>
       </div>
 
-      <AdminFilterBar search={search} onSearchChange={setSearch} searchPlaceholder={t("admin.sendAlerts.searchPlaceholder")}
-        locationFilter={locationFilter} onLocationChange={setLocationFilter}
+      <AdminFilterBar search={search} onSearchChange={setSearch} searchPlaceholder={t("admin.sendAlerts.searchPlaceholder")} locationFilter={locationFilter} onLocationChange={setLocationFilter}
         filters={[{ label: t("admin.sendAlerts.type"), value: typeFilter, onChange: setTypeFilter, options: ALERT_TYPES.map((t) => ({ value: t, label: t.charAt(0).toUpperCase() + t.slice(1) })) }]}
-        onClearAll={() => { setSearch(""); setTypeFilter(""); setLocationFilter(""); }} />
+        onClearAll={clearAll}
+      />
 
       <div className="overflow-x-auto bg-white rounded-2xl shadow-lg ring-1 ring-gray-200">
         <table className="min-w-full divide-y divide-gray-200">
@@ -118,14 +136,19 @@ export default function ManageAlerts() {
         <Pagination currentPage={currentPage} totalPages={totalPages} onPageChange={setCurrentPage} totalItems={filtered.length} pageSize={PAGE_SIZE} />
       </div>
 
-      <DetailModal open={viewOpen} onClose={() => { setViewOpen(false); setViewItem(null); }} title={t("admin.sendAlerts.alertDetails")} icon={<Bell size={20} />}
+      <DetailModal
+        open={viewOpen}
+        onClose={() => { setViewOpen(false); setViewItem(null); }}
+        title={t("admin.sendAlerts.alertDetails")}
+        icon={<Bell size={20} />}
         fields={[
           { label: t("admin.sendAlerts.tableTitle"), value: viewItem?.title },
           { label: t("admin.sendAlerts.typeLabel"), value: viewItem?.type, render: (v) => <span className="capitalize bg-gray-100 px-2.5 py-1 rounded-full text-xs font-semibold">{v}</span> },
           { label: t("admin.sendAlerts.location"), value: viewItem?.location },
           { label: t("admin.sendAlerts.description"), value: viewItem?.description },
-          { label: t("admin.sendAlerts.timestamp"), value: viewItem?.timestamp ? new Date(viewItem.timestamp).toLocaleString() : "\u2014" },
-        ]} />
+          { label: t("admin.sendAlerts.timestamp"), value: viewItem?.timestamp ? new Date(viewItem.timestamp).toLocaleString() : "—" },
+        ]}
+      />
       <AlertModal open={showModal} onClose={() => { setSelectedAlert(null); setShowModal(false); }} onSubmit={handleModalSubmit} initialData={selectedAlert} submitting={submitting} />
     </>
   );

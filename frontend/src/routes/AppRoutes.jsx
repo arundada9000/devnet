@@ -11,7 +11,7 @@ import { AnimatePresence } from "framer-motion";
 import PageLoader from "../components/PageLoader";
 import ErrorBoundary from "../components/ErrorBoundary";
 
-// Lazy-loaded page components
+// ─── Lazy-loaded page components ───
 const Signin = React.lazy(() => import("../pages/Auth/Login"));
 const Signup = React.lazy(() => import("../pages/Auth/Signup"));
 const ForgotPassword = React.lazy(() => import("../pages/Auth/ForgotPassword"));
@@ -31,11 +31,12 @@ const ManageReports = React.lazy(() => import("../Admin/Manage-Reports"));
 const ManageContacts = React.lazy(() => import("../Admin/ManageContacts"));
 const SendAlerts = React.lazy(() => import("../Admin/SendAlerts"));
 const ManageSafeZones = React.lazy(() => import("../Admin/ManageSafeZones"));
+const ManageVolunteers = React.lazy(() => import("../Admin/ManageVolunteers"));
 const Profile = React.lazy(() => import("../pages/Dashboard/Profile"));
 const Unauthorized = React.lazy(() => import("../pages/Unauthorized"));
 const NotFound = React.lazy(() => import("../pages/NotFound"));
 
-// Eagerly loaded (small, critical-path components)
+// ─── Eagerly loaded (small, critical-path components) ───
 import Navigation from "../layouts/Navigation";
 import RequireAdmin from "../Auth/RequireAdmin";
 import Logout from "../Auth/Logout";
@@ -53,6 +54,7 @@ const AnimatedRoutes = () => {
     <Suspense fallback={<PageLoader />}>
       <AnimatePresence mode="wait">
         <Routes location={location} key={routeKey}>
+          {/* Public/Auth Routes */}
           <Route path="/welcome" element={<Welcome />} />
           <Route path="/signin" element={<Signin />} />
           <Route path="/signup" element={<Signup />} />
@@ -63,6 +65,7 @@ const AnimatedRoutes = () => {
 
           <Route path="/" element={<Navigate to="/dashboard/home" replace />} />
 
+          {/* User Routes with Navigation layout */}
           <Route path="/dashboard" element={<Navigation />}>
             <Route path="home" element={<DashboardHome />} />
             <Route path="alerts" element={<DashboardAlerts />} />
@@ -74,14 +77,16 @@ const AnimatedRoutes = () => {
               path="emergency-type-selection"
               element={<EmergencyTypeSelection />}
             />
+            {/* Dynamic Contact Route — matches /dashboard/:localGov/:department */}
             <Route path=":localGov/:department" element={<DynamicContact />} />
           </Route>
 
+          {/* Admin Routes */}
           <Route
             path="/admin"
             element={
               <RequireAdmin>
-                <AdminLayout />
+                <AdminLayout /> 
               </RequireAdmin>
             }
           >
@@ -89,10 +94,12 @@ const AnimatedRoutes = () => {
             <Route path="manage-users" element={<ManageUsers />} />
             <Route path="send-alerts" element={<SendAlerts />} />
             <Route path="manage-reports" element={<ManageReports />} />
+            <Route path="manage-volunteers" element={<ManageVolunteers />} />
             <Route path="manage-contacts" element={<ManageContacts />} />
             <Route path="manage-safe-zones" element={<ManageSafeZones />} />
           </Route>
 
+          {/* Catch-all route */}
           <Route path="*" element={<NotFound />} />
         </Routes>
       </AnimatePresence>
@@ -111,3 +118,4 @@ const AppRoutes = () => {
 };
 
 export default AppRoutes;
+
