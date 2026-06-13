@@ -9,6 +9,7 @@ const Welcome = () => {
 
   return (
     <div className="min-h-screen bg-white relative px-6 pt-4 flex flex-col overflow-hidden">
+      {/* Back button */}
       <motion.button
         initial={{ opacity: 0, x: -20 }}
         animate={{ opacity: 1, x: 0 }}
@@ -19,9 +20,11 @@ const Welcome = () => {
         <ChevronLeft size={28} strokeWidth={2.5} />
       </motion.button>
 
+      {/* Decorative background elements */}
       <div className="absolute top-[-10%] right-[-10%] w-96 h-96 bg-blue-50 rounded-full blur-3xl opacity-60"></div>
       <div className="absolute bottom-[-10%] left-[-10%] w-96 h-96 bg-red-50 rounded-full blur-3xl opacity-60"></div>
 
+      {/* Centered container */}
       <div className="flex-1 flex flex-col justify-center items-center text-center relative z-10">
         <motion.div
           initial={{ scale: 0.8, opacity: 0 }}
@@ -37,7 +40,7 @@ const Welcome = () => {
           />
         </motion.div>
 
-        <motion.p
+        <motion.p 
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2 }}
@@ -46,7 +49,7 @@ const Welcome = () => {
           {t("auth.tagline", "From alert to action — Instantly")}
         </motion.p>
 
-        <motion.div
+        <motion.div 
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.3 }}
@@ -59,7 +62,7 @@ const Welcome = () => {
           >
             {t("auth.login", "Login")}
           </button>
-
+          
           <button
             onClick={() => navigate("/signup")}
             className="w-full bg-white border-2 border-gray-200 text-gray-800 py-3.5 rounded-2xl text-lg font-bold shadow-sm hover:border-gray-300 hover:bg-gray-50 transition-all active:scale-95"

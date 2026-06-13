@@ -20,6 +20,7 @@ const Register = () => {
   const nameInputRef = useRef(null);
 
   useEffect(() => {
+    // Auto-focus full name input on mount
     if (nameInputRef.current) {
       nameInputRef.current.focus();
     }
@@ -39,10 +40,12 @@ const Register = () => {
     if (!passwordsMatch) return toast.error(t("register.passwordMismatch", "Passwords do not match."));
 
     setSubmitting(true);
-
+    
+    // Get user's current GPS coordinates for ga-pa detection
     let latitude = 0;
     let longitude = 0;
     try {
+      // Loading toast for location
       toast.loading(t("register.detectingLocation", "Optimizing for your location..."), { id: "location-toast" });
       const position = await new Promise((resolve, reject) =>
         navigator.geolocation.getCurrentPosition(resolve, reject, { timeout: 5000 })
@@ -51,6 +54,7 @@ const Register = () => {
       longitude = position.coords.longitude;
       toast.success(t("register.locationDetected", "Location optimized!"), { id: "location-toast" });
     } catch {
+      // Location unavailable — backend will store "Unknown"
       toast.dismiss("location-toast");
     }
 
@@ -76,6 +80,7 @@ const Register = () => {
     <div className="min-h-screen bg-[#f8fafc] px-6 py-8 flex flex-col items-center justify-center relative overflow-hidden">
       <Toaster position="top-center" toastOptions={{ style: { borderRadius: '1rem', background: '#333', color: '#fff' } }} />
 
+      {/* Back Button */}
       <motion.button
         initial={{ opacity: 0, x: -20 }}
         animate={{ opacity: 1, x: 0 }}
@@ -86,16 +91,19 @@ const Register = () => {
         <ChevronLeft size={28} strokeWidth={2.5} />
       </motion.button>
 
+      {/* Decorative background gradients */}
       <div className="absolute top-[-20%] left-[-10%] w-[400px] h-[400px] bg-red-100/50 rounded-full blur-3xl pointer-events-none"></div>
 
+      {/* Main Content */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5, ease: "easeOut" }}
         className="w-full max-w-md relative z-10"
       >
+        {/* Header */}
         <div className="text-center mb-8">
-          <motion.h1
+          <motion.h1 
             className="text-3xl font-black text-gray-900 tracking-tight"
             initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
@@ -103,7 +111,7 @@ const Register = () => {
           >
             {t("register.title", "Create an Account")}
           </motion.h1>
-          <motion.p
+          <motion.p 
             className="text-sm font-medium text-gray-500 mt-2"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -113,7 +121,9 @@ const Register = () => {
           </motion.p>
         </div>
 
+        {/* Form */}
         <form onSubmit={handleSignup} className="bg-white p-6 sm:p-8 rounded-[2rem] shadow-xl shadow-gray-200/50 border border-gray-100 space-y-5">
+          {/* Name */}
           <div>
             <label
               htmlFor="name"
@@ -132,6 +142,7 @@ const Register = () => {
             />
           </div>
 
+          {/* Phone */}
           <div>
             <label
               htmlFor="phone"
@@ -153,6 +164,7 @@ const Register = () => {
             </div>
           </div>
 
+          {/* Password */}
           <div>
             <label
               htmlFor="password"
@@ -180,6 +192,7 @@ const Register = () => {
             </div>
           </div>
 
+          {/* Confirm Password */}
           <div>
             <label
               htmlFor="confirmPassword"
@@ -197,6 +210,7 @@ const Register = () => {
             />
           </div>
 
+          {/* Sign Up Button */}
           <motion.button
             type="submit"
             disabled={submitting}
@@ -210,7 +224,8 @@ const Register = () => {
           </motion.button>
         </form>
 
-        <motion.p
+        {/* Footer */}
+        <motion.p 
           className="text-sm font-medium text-center mt-8 text-gray-600"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}

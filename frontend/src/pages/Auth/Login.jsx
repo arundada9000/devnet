@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import useAuth from "../../stores/useAuth";
 import API from "../../api/axios";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { Eye, EyeOff, ChevronLeft, Loader2 } from "lucide-react";
 import toast, { Toaster } from "react-hot-toast";
 
@@ -21,6 +21,7 @@ const Login = () => {
   const login = useAuth((state) => state.login);
 
   useEffect(() => {
+    // Auto-focus phone input on mount
     if (phoneInputRef.current) {
       phoneInputRef.current.focus();
     }
@@ -45,9 +46,9 @@ const Login = () => {
 
       const { user, token } = res.data;
 
-      login(user, token);
+      login(user, token); // Store in Zustand
       toast.success(t("login.success", "Login successful!"));
-
+      
       setTimeout(() => navigate("/dashboard/home"), 800);
     } catch (err) {
       console.error("Login error:", err);
@@ -59,7 +60,8 @@ const Login = () => {
   return (
     <div className="min-h-screen bg-[#f8fafc] px-6 py-8 relative flex flex-col overflow-hidden">
       <Toaster position="top-center" toastOptions={{ style: { borderRadius: '1rem', background: '#333', color: '#fff' } }} />
-
+      
+      {/* Back Button */}
       <motion.button
         initial={{ opacity: 0, x: -20 }}
         animate={{ opacity: 1, x: 0 }}
@@ -70,8 +72,10 @@ const Login = () => {
         <ChevronLeft size={28} strokeWidth={2.5} />
       </motion.button>
 
+      {/* Decorative background gradients */}
       <div className="absolute top-[-20%] right-[-10%] w-[500px] h-[500px] bg-blue-100/50 rounded-full blur-3xl pointer-events-none"></div>
 
+      {/* Header */}
       <div className="flex flex-col items-center justify-center mt-10 relative z-10">
         <motion.img
           src="/assets/logo.png"
@@ -90,7 +94,7 @@ const Login = () => {
         >
           {t("login.title", "Welcome Back")}
         </motion.h1>
-        <motion.p
+        <motion.p 
           className="text-sm font-medium text-gray-500 mt-2"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
@@ -100,6 +104,7 @@ const Login = () => {
         </motion.p>
       </div>
 
+      {/* Form Container */}
       <motion.form
         onSubmit={handleLogin}
         className="w-full max-w-sm bg-white mt-8 p-6 sm:p-8 rounded-[2rem] shadow-xl shadow-gray-200/50 mx-auto space-y-6 text-left relative z-10 border border-gray-100"
@@ -107,6 +112,7 @@ const Login = () => {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.4, delay: 0.1 }}
       >
+        {/* Phone */}
         <div>
           <label
             htmlFor="phone"
@@ -130,6 +136,7 @@ const Login = () => {
           </div>
         </div>
 
+        {/* Password */}
         <div>
           <label
             htmlFor="password"
@@ -158,6 +165,7 @@ const Login = () => {
           </div>
         </div>
 
+        {/* Remember Me & Forgot Password */}
         <div className="flex justify-between items-center text-sm font-medium text-gray-600">
           <label className="flex items-center gap-2 cursor-pointer group">
             <input
@@ -176,6 +184,7 @@ const Login = () => {
           </span>
         </div>
 
+        {/* Login Button */}
         <button
           type="submit"
           disabled={submitting}
@@ -189,13 +198,14 @@ const Login = () => {
         </button>
       </motion.form>
 
-      <motion.p
+      {/* Bottom Register Link */}
+      <motion.p 
         className="text-sm font-medium text-center mt-8 text-gray-600 relative z-10"
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ delay: 0.3 }}
       >
-        {t("login.noAccount", "Don't have an account?") + " "}
+        {t("login.noAccount", "Don’t have an account?") + " "}
         <span
           className="text-red-500 font-bold cursor-pointer hover:underline hover:text-red-600 transition-colors"
           onClick={() => navigate("/signup")}

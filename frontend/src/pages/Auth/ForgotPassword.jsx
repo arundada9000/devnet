@@ -17,6 +17,7 @@ const ForgotPassword = () => {
     }
 
     try {
+      // TODO: Replace with real OTP logic
       console.log(`Sending OTP to phone number: ${phone}`);
       setMessage(t("forgotPassword.otpSent"));
 
@@ -31,6 +32,7 @@ const ForgotPassword = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-blue-50 to-white px-6 pt-4 pb-10 flex flex-col relative">
+      {/* Back Button */}
       <button
         onClick={() => navigate(-1)}
         aria-label={t("forgotPassword.back")}
@@ -43,8 +45,10 @@ const ForgotPassword = () => {
         />
       </button>
 
+      {/* Main Content */}
       <div className="flex-1 flex flex-col items-center justify-center">
         <div className="flex flex-col items-center justify-center text-center bg-white p-10 shadow-2xl">
+          {/* Logo */}
           <div className="flex justify-center mt-8 mb-2">
             <img
               src="/assets/logo.png"
@@ -54,6 +58,7 @@ const ForgotPassword = () => {
             />
           </div>
 
+          {/* Heading */}
           <h2 className="text-xl font-semibold text-gray-800 mb-2">
             {t("forgotPassword.title", "Forgot Password")}
           </h2>
@@ -64,10 +69,12 @@ const ForgotPassword = () => {
             )}
           </p>
 
+          {/* Form */}
           <form
             onSubmit={handleSubmit}
             className="w-full max-w-xs space-y-4 text-left"
           >
+            {/* Phone Number */}
             <div>
               <label htmlFor="phone" className="text-sm font-medium block mb-1">
                 {t("forgotPassword.phoneLabel", "Phone Number")}
@@ -91,6 +98,7 @@ const ForgotPassword = () => {
               </div>
             </div>
 
+            {/* Submit Button */}
             <button
               type="submit"
               className="w-full bg-blue-600 text-white py-3 rounded-xl font-semibold hover:bg-blue-700 transition duration-200"
@@ -99,6 +107,7 @@ const ForgotPassword = () => {
             </button>
           </form>
 
+          {/* Feedback */}
           {message && <p className="mt-4 text-sm text-gray-700">{message}</p>}
         </div>
       </div>

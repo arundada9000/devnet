@@ -16,8 +16,11 @@ const VerifyOTP = () => {
 
   useEffect(() => {
     if (!stepData && !verified) {
+      // setTimeout(() => navigate("/signup"), 500);
     }
   }, [stepData, verified, navigate]);
+
+  // if (!stepData) return null;
 
   const handleChange = (value, index) => {
     if (!/^[0-9]?$/.test(value)) return;
@@ -46,18 +49,20 @@ const VerifyOTP = () => {
       return;
     }
 
-    setVerified(true);
+    setVerified(true); // <- prevent redirect
     login({ name: stepData.name, phone: stepData.phone });
     clearStepData();
     navigate("/dashboard/home");
   };
 
   const handleResend = () => {
+    // Simulate resend
     alert(t("otp.resentTo", { phone: stepData.phone }));
   };
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-blue-50 to-white px-6 pt-4 pb-10 flex flex-col relative">
+      {/* Back Button */}
       <button
         onClick={() => navigate(-1)}
         aria-label={t("otp.back")}
@@ -70,8 +75,10 @@ const VerifyOTP = () => {
         />
       </button>
 
+      {/* Main Content */}
       <div className="flex flex-1 justify-center items-center">
         <div className="flex flex-col items-center justify-center text-center bg-white shadow-2xl p-3 rounded-3xl">
+          {/* Logo */}
           <div className="flex justify-center mt-8 mb-2">
             <img
               src="/assets/logo.png"
@@ -81,6 +88,7 @@ const VerifyOTP = () => {
             />
           </div>
 
+          {/* Heading */}
           <h1 className="text-xl font-semibold text-gray-800 mb-2">
             {t("otp.title", "Phone Number Verification")}
           </h1>
@@ -88,6 +96,7 @@ const VerifyOTP = () => {
             {t("otp.subtitle", "Enter the 6-digit code sent to your phone")}
           </p>
 
+          {/* OTP Inputs */}
           <div className="flex gap-3 justify-center mb-4">
             {otp.map((digit, idx) => (
               <input
@@ -105,8 +114,10 @@ const VerifyOTP = () => {
             ))}
           </div>
 
+          {/* Error */}
           {error && <p className="text-sm text-red-500 mb-2">{error}</p>}
 
+          {/* Verify Button */}
           <button
             onClick={handleVerify}
             className="w-full max-w-xs bg-blue-600 text-white py-3 rounded-xl font-semibold mt-2 hover:bg-blue-700 transition duration-200"
@@ -114,6 +125,7 @@ const VerifyOTP = () => {
             {t("otp.verify", "Verify & Continue")}
           </button>
 
+          {/* Resend */}
           <p className="text-sm text-gray-600 mt-4">
             {t("otp.resendText", "Didn't receive the code?")}&nbsp;
             <span
