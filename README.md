@@ -293,12 +293,9 @@ Full API reference: [docs/API.md](docs/API.md)
 
 #### Initial Prototype - _Team DevNet_
 
-- **Aayush Chapagain** – UI/UX Design
 - **Arun Neupane** – Frontend Development | Project Manager
 - **Sudhir Aryal** – Presentation | idea formulation | Research
 - **Shubham Gyawali** – Backend Development
-
-<img src="./assets/images/team-emergex.jpg" alt="Team Emergex" width="350"/>
 
 ---
 
@@ -324,3 +321,35 @@ This project is developed and maintained by **Arun Neupane** for educational and
 [![WhatsApp](https://img.shields.io/badge/WhatsApp-25D366.svg?&logo=whatsapp&logoColor=white)](https://wa.me/+9779811420975)
 [![Email](https://img.shields.io/badge/Email-%23D14836.svg?&logo=gmail&logoColor=white)](mailto:arunneupane0000@gmail.com)
 [![YouTube](https://img.shields.io/badge/YouTube-%23FF0000.svg?&logo=youtube&logoColor=white)](https://youtube.com/@code_with_ease)
+
+## Screenshots
+
+### Admin Side
+
+| Dashboard                                                          | Reports                                                           | Alerts                                                           |
+| ------------------------------------------------------------------ | ----------------------------------------------------------------- | ---------------------------------------------------------------- |
+| <img src="./assets/screenshots/admin-dashboard.png" width="100%"/> | <img src="./assets/screenshots/manage-reports.png" width="100%"/> | <img src="./assets/screenshots/manage-alerts.png" width="100%"/> |
+
+| Users                                                           | Contacts                                                           | Safe Zones                                                           |
+| --------------------------------------------------------------- | ------------------------------------------------------------------ | -------------------------------------------------------------------- |
+| <img src="./assets/screenshots/manage-users.png" width="100%"/> | <img src="./assets/screenshots/manage-contacts.png" width="100%"/> | <img src="./assets/screenshots/manage-safe-zones.png" width="100%"/> |
+
+| Volunteers                                                           | Home                                                    |
+| -------------------------------------------------------------------- | ------------------------------------------------------- |
+| <img src="./assets/screenshots/manage-volunteers.png" width="100%"/> | <img src="./assets/screenshots/home.png" width="100%"/> |
+
+---
+
+### User Side
+
+| Welcome                                                    | Sign In                                                   | Sign Up                                                   |
+| ---------------------------------------------------------- | --------------------------------------------------------- | --------------------------------------------------------- |
+| <img src="./assets/screenshots/welcome.png" width="100%"/> | <img src="./assets/screenshots/signin.png" width="100%"/> | <img src="./assets/screenshots/signup.png" width="100%"/> |
+
+| Map                                                    | Report                                                    | Profile                                                    |
+| ------------------------------------------------------ | --------------------------------------------------------- | ---------------------------------------------------------- |
+| <img src="./assets/screenshots/map.png" width="100%"/> | <img src="./assets/screenshots/report.png" width="100%"/> | <img src="./assets/screenshots/profile.png" width="100%"/> |
+
+| Emergency Numbers                                          | Sahayata Call                                                    |
+| ---------------------------------------------------------- | ---------------------------------------------------------------- |
+| <img src="./assets/screenshots/numbers.png" width="100%"/> | <img src="./assets/screenshots/sahayata-call.png" width="100%"/> |
