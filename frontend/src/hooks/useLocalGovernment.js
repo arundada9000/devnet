@@ -1,6 +1,8 @@
 // Local government boundary detection using backend API
 import { useEffect, useState } from "react";
 import { useLocalGovStore } from "../stores/localGovStore";
+import { prefetchLocalContacts } from "../utils/offlineQueue";
+import API from "../api/axios";
 
 export const useLocalGovernment = () => {
   const [loading, setLoading] = useState(true);
@@ -14,6 +16,7 @@ export const useLocalGovernment = () => {
       if (cached) {
         setLocalGovState(cached);
         setLoading(false);
+        prefetchLocalContacts(API, cached);
         return;
       }
 
@@ -31,10 +34,17 @@ export const useLocalGovernment = () => {
               // Cache result in Zustand
               setLocalGov(name, coords);
               setLocalGovState(name);
+              
+              // Prefetch offline contacts for this specific local gov
+              if (name !== "Unknown") {
+                prefetchLocalContacts(API, name);
+              }
             } catch (err) {
               console.error("Backend detection failed", err);
-              setLocalGov("Detection Failed", null);
-              setLocalGovState("Detection Failed");
+              // Save coordinates even if backend fails (we are offline)
+              const coords = [pos.coords.latitude, pos.coords.longitude];
+              setLocalGov("Unknown", coords);
+              setLocalGovState("Unknown");
             } finally {
               setLoading(false);
             }
@@ -44,7 +54,8 @@ export const useLocalGovernment = () => {
             setLocalGov("Location Access Denied");
             setLocalGovState("Location Access Denied");
             setLoading(false);
-          }
+          },
+          { enableHighAccuracy: true, timeout: 15000, maximumAge: 60000 }
         );
       } catch (err) {
         console.error("Geolocation request failed", err);

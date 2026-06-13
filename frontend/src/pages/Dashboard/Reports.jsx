@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
+import { saveReportOffline, prepareOfflineReport } from "../../utils/offlineQueue";
 import {
   Camera,
   MapPin,
@@ -71,10 +72,11 @@ export default function ReportForm() {
         setLocating(false);
       },
       (err) => {
-        toast.error(t("report.locationError", "Failed to secure location."));
+        console.warn("Geolocation error:", err);
+        toast.error(t("report.locationError", "GPS failed. Step outside for satellite lock if offline."));
         setLocating(false);
       },
-      { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+      { enableHighAccuracy: true, timeout: 15000, maximumAge: 60000 }
     );
   };
 
@@ -140,13 +142,25 @@ export default function ReportForm() {
       setStatus("success");
     } catch (err) {
       console.error(err);
-      setErrorMessage(err.response?.data?.message || err.message || t("report.submitError", "Failed to submit report."));
-      setStatus("failed");
+      try {
+        const offlineData = await prepareOfflineReport({
+          type,
+          description,
+          location: JSON.stringify([location.lng, location.lat]),
+          photoFile,
+        });
+        await saveReportOffline(offlineData);
+        setStatus("queued");
+      } catch (queueErr) {
+        console.error("Failed to queue offline:", queueErr);
+        setErrorMessage(t("report.offlineSaveFailed", "Failed to save report offline."));
+        setStatus("failed");
+      }
     }
   };
 
   // ---- FULL SCREEN STATES ----
-  if (status === "submitting" || status === "success" || status === "failed") {
+  if (status === "submitting" || status === "success" || status === "failed" || status === "queued") {
     return (
       <div className="fixed inset-0 z-50 flex items-center justify-center bg-gray-950/40 backdrop-blur-xl">
         <AnimatePresence mode="wait">
@@ -167,6 +181,21 @@ export default function ReportForm() {
               </motion.div>
               <h2 className="text-2xl font-bold text-gray-900 mb-2">{t("report.success", "Report Submitted!")}</h2>
               <button onClick={() => navigate("/dashboard/home")} className="mt-8 w-full bg-blue-600 text-white font-bold py-3 rounded-xl hover:bg-blue-700 transition">
+                {t("report.backHome", "Return Home")}
+              </button>
+            </motion.div>
+          )}
+
+          {status === "queued" && (
+            <motion.div key="queued" initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} className="bg-white p-10 rounded-[2rem] shadow-2xl max-w-sm w-full mx-4 text-center">
+              <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ type: "spring" }} className="w-20 h-20 bg-amber-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                <WifiOff size={36} className="text-amber-600" />
+              </motion.div>
+              <h2 className="text-2xl font-bold text-gray-900 mb-2">{t("report.queuedTitle", "Saved Offline")}</h2>
+              <p className="text-sm text-gray-600 mb-6 leading-relaxed">
+                {t("report.queuedMessage", "Your report has been saved and will be submitted automatically when you're back online.")}
+              </p>
+              <button onClick={() => navigate("/dashboard/home")} className="w-full bg-amber-600 text-white font-bold py-3 rounded-xl hover:bg-amber-700 transition">
                 {t("report.backHome", "Return Home")}
               </button>
             </motion.div>

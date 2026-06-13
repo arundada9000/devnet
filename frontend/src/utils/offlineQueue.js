@@ -5,7 +5,7 @@
  */
 
 const DB_NAME = "sajilo-offline-db";
-const DB_VERSION = 2;
+const DB_VERSION = 3; // Bumped version for contacts store
 const STORE_NAME = "offlineReports";
 const CONTACTS_STORE = "offlineContacts";
 
@@ -241,4 +241,35 @@ export async function getCachedContacts(localGov, department) {
     request.onsuccess = () => resolve(request.result?.contacts || null);
     request.onerror = () => reject(request.error);
   });
+}
+
+/**
+ * Proactively fetches contacts from the API and caches only the ones
+ * for the user's specific local government.
+ */
+export async function prefetchLocalContacts(apiInstance, userLocalGov) {
+  if (!userLocalGov || userLocalGov === "Unknown") return;
+
+  try {
+    const res = await apiInstance.get("/contacts");
+    if (res.data && Array.isArray(res.data)) {
+      let cachedCount = 0;
+      for (const record of res.data) {
+        if (
+          record.localGovName && 
+          record.department && 
+          record.contacts &&
+          record.localGovName.toLowerCase() === userLocalGov.toLowerCase()
+        ) {
+          await cacheContacts(record.localGovName, record.department, record.contacts);
+          cachedCount++;
+        }
+      }
+      if (cachedCount > 0) {
+        console.log(`[Offline] Proactively cached ${cachedCount} emergency departments for ${userLocalGov}.`);
+      }
+    }
+  } catch (err) {
+    console.warn("[Offline] Failed to prefetch contacts:", err.message);
+  }
 }

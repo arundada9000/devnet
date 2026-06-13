@@ -84,11 +84,12 @@ export default function ReportForm() {
         setLocation({ lat: pos.coords.latitude, lng: pos.coords.longitude });
         setLocating(false);
       },
-      () => {
-        toast.error(t("report.locationError", "Failed to secure location."));
+      (err) => {
+        console.warn("Geolocation error:", err);
+        toast.error(t("report.locationError", "GPS failed. Step outside for satellite lock if offline."));
         setLocating(false);
       },
-      { enableHighAccuracy: false, timeout: 5000, maximumAge: 60000 }
+      { enableHighAccuracy: true, timeout: 15000, maximumAge: 60000 }
     );
   };
 
