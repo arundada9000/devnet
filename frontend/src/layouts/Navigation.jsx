@@ -1,4 +1,4 @@
-import { useState, lazy, Suspense } from "react";
+import { useState, useEffect, lazy, Suspense } from "react";
 import { useTranslation } from "react-i18next";
 import { useLocation, useNavigate, Outlet } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
@@ -16,6 +16,7 @@ const NavigationLayout = () => {
 
   const user = useAuth((state) => state.user);
 
+  const [prevScrollY, setPrevScrollY] = useState(0);
   const [showBottomNav, setShowBottomNav] = useState(true);
   const [showProfileDrawer, setShowProfileDrawer] = useState(false);
 
@@ -35,15 +36,19 @@ const NavigationLayout = () => {
     { id: "settings", path: "/settings", labelKey: "navigation.settings", icon: User },
   ];
 
+  // Determine which tab is active for the layoutId indicator
   const activeTabId =
     navItems.find((item) =>
       item.path !== "/settings" ? isActive(item.path) : false
     )?.id ?? (showProfileDrawer ? "settings" : null);
 
+  // Navbar hiding disabled as per user request
+
   const userName = user?.username || t("navigation.citizen");
 
   return (
     <div className="relative min-h-screen bg-bg-light text-text-dark w-full overflow-x-hidden">
+      {/* Premium Glassmorphic Top Header */}
       <header className="sticky top-0 z-40 bg-white/80 backdrop-blur-md border-b border-gray-200/50 shadow-sm px-4 py-3">
         <div className="flex items-center justify-between max-w-4xl mx-auto">
           <div className="flex flex-col">
@@ -56,9 +61,9 @@ const NavigationLayout = () => {
               </span>
             </div>
           </div>
-
-          <motion.div
-            whileHover={{ scale: 1.05 }}
+          
+          <motion.div 
+            whileHover={{ scale: 1.05 }} 
             whileTap={{ scale: 0.95 }}
             className="flex-shrink-0 cursor-pointer"
           >
@@ -72,10 +77,12 @@ const NavigationLayout = () => {
         </div>
       </header>
 
+      {/* Main Content Area */}
       <main className="pb-24 pt-2 max-w-4xl mx-auto w-full">
         <Outlet />
       </main>
 
+      {/* Premium Floating Bottom Navbar */}
       <AnimatePresence>
         <motion.nav
           initial={false}
@@ -105,6 +112,7 @@ const NavigationLayout = () => {
                   aria-label={t(item.labelKey)}
                   aria-current={isSelected ? "page" : undefined}
                 >
+                  {/* Framer Motion Sliding Pill Indicator */}
                   {isSelected && (
                     <motion.div
                       layoutId="activeNavIndicator"
@@ -112,7 +120,8 @@ const NavigationLayout = () => {
                       transition={{ type: "spring", stiffness: 300, damping: 25 }}
                     />
                   )}
-
+                  
+                  {/* Icon & Label (above the background pill) */}
                   <div className="relative z-10 flex flex-col items-center gap-1">
                     <Icon size={22} strokeWidth={isSelected ? 2.5 : 2} className="transition-all duration-300" />
                     <span className={`text-[10px] font-medium tracking-tight ${isSelected ? "font-bold" : ""}`}>
@@ -126,6 +135,7 @@ const NavigationLayout = () => {
         </motion.nav>
       </AnimatePresence>
 
+      {/* Sliding Profile Drawer */}
       <Suspense fallback={null}>
         <ProfileDrawer
           open={showProfileDrawer}

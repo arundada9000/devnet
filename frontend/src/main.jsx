@@ -15,7 +15,7 @@ const ApplyPreferences = ({ children }) => {
   const [ready, setReady] = React.useState(false);
 
   React.useEffect(() => {
-    loadPreferences();
+    loadPreferences(); // Loads from localStorage
     setReady(true);
   }, []);
 
@@ -24,9 +24,11 @@ const ApplyPreferences = ({ children }) => {
 
     const body = document.body;
 
+    // Theme
     body.classList.remove("theme-light", "theme-dark");
     body.classList.add(`theme-${theme}`);
 
+    // Font family
     body.classList.remove(
       "font-poppins",
       "font-arial",
@@ -45,12 +47,15 @@ const ApplyPreferences = ({ children }) => {
     );
     body.classList.add(`font-${fontFamily}`);
 
+    // Font size
     body.classList.remove("text-sm", "text-base", "text-lg", "text-xl");
     body.classList.add(`text-${fontSize}`);
 
+    // Language (load bundle first, then activate to avoid fallback flash)
     loadLanguage(language).then(() => i18n.changeLanguage(language));
   }, [theme, fontSize, fontFamily, language, ready]);
 
+  // Optional loading state to avoid flicker
   if (!ready) return null;
 
   return <>{children}</>;
@@ -64,7 +69,7 @@ const queryClient = new QueryClient({
     queries: {
       refetchOnWindowFocus: false,
       retry: 1,
-      staleTime: 5 * 60 * 1000,
+      staleTime: 5 * 60 * 1000, // 5 minutes
     },
   },
 });
