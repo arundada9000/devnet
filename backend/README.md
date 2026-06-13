@@ -21,6 +21,8 @@
 | **Passwords** | bcrypt (10 salt rounds) |
 | **File Uploads** | Multer (memory storage) → Cloudinary |
 | **Image Hosting** | Cloudinary SDK |
+| **SMS Gateway** | Twilio SDK (Outbound) + Webhooks (Inbound) |
+| **AI Analysis** | Google Gemini (Image Severity & Multilingual Translation) |
 | **Push Notifications** | web-push (VAPID) |
 | **Geospatial** | Turf.js (point-in-polygon) |
 | **Date** | Day.js |
@@ -164,6 +166,13 @@ All routes are prefixed with `/api`.
 | POST | `/subscribe` | — | Save a push subscription |
 | POST | `/unsubscribe` | — | Remove a push subscription |
 
+### SMS (`/api/webhook/sms`)
+
+| Method | Path | Auth | Description |
+|---|---|---|---|
+| POST | `/` | Twilio | Handle inbound SMS reports via Twilio Webhook |
+| POST | `/reply` | Admin | Send outbound SMS reply to a user |
+
 ---
 
 ## Data Models
@@ -287,6 +296,10 @@ The `resolveGaPa.ts` utility loads GeoJSON boundary files from `data/geojson/` o
 | `VAPID_PUBLIC_KEY` | No | Web push VAPID public key |
 | `VAPID_PRIVATE_KEY` | No | Web push VAPID private key |
 | `VAPID_EMAIL` | No | Email for VAPID configuration |
+| `TWILIO_ACCOUNT_SID` | No | Twilio Account SID for SMS |
+| `TWILIO_AUTH_TOKEN` | No | Twilio Auth Token for SMS |
+| `TWILIO_MESSAGING_SERVICE_SID` | No | Twilio Messaging Service SID |
+| `GEMINI_API_KEY` | No | Gemini AI API key for translation & image analysis |
 | `NODE_ENV` | No | `production` for Vercel deployment |
 
 ---
