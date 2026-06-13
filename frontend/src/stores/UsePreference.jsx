@@ -4,7 +4,7 @@ const defaultPrefs = {
   theme: "light",
   fontSize: "base",
   fontFamily: "sans",
-  language: "en",
+  language: "en", // Default language
 };
 
 const usePreferences = create((set) => ({

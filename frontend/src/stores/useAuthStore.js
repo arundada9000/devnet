@@ -1,6 +1,8 @@
 import { create } from "zustand";
 
 const useAuthStore = create((set) => ({
+  // user: null,
+  // token: null,
   user: {
     name: "Demo User",
     email: "demo@example.com",

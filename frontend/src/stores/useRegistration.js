@@ -1,3 +1,4 @@
+// src/stores/useRegistration.js
 import { create } from "zustand";
 
 const useRegistration = create((set) => ({

@@ -1,8 +1,18 @@
+/**
+ * Offline Queue Utility
+ * Uses IndexedDB to store reports when the user is offline.
+ * Auto-syncs when connectivity returns.
+ */
+
 const DB_NAME = "sajilo-offline-db";
 const DB_VERSION = 2;
 const STORE_NAME = "offlineReports";
 const CONTACTS_STORE = "offlineContacts";
 
+/**
+ * Registers a background sync event with the service worker.
+ * This ensures pending reports sync even if the user closes the app.
+ */
 async function registerBackgroundSync() {
   try {
     if ("serviceWorker" in navigator && "SyncManager" in window) {
@@ -10,9 +20,14 @@ async function registerBackgroundSync() {
       await reg.sync.register("sync-reports");
     }
   } catch {
+    // Background sync not supported — will rely on online event + polling
   }
 }
 
+/**
+ * Opens (or creates) the IndexedDB database.
+ * @returns {Promise<IDBDatabase>}
+ */
 function openDB() {
   return new Promise((resolve, reject) => {
     const request = indexedDB.open(DB_NAME, DB_VERSION);
@@ -34,6 +49,10 @@ function openDB() {
   });
 }
 
+/**
+ * Converts a File/Blob to a base64 data URL string.
+ * Required because File objects can't be stored in IndexedDB directly.
+ */
 function fileToBase64(file) {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
@@ -43,6 +62,9 @@ function fileToBase64(file) {
   });
 }
 
+/**
+ * Converts a base64 data URL back to a Blob for FormData reconstruction.
+ */
 function base64ToBlob(base64, mimeType = "image/jpeg") {
   try {
     const parts = base64.split(",");
@@ -61,6 +83,10 @@ function base64ToBlob(base64, mimeType = "image/jpeg") {
   return null;
 }
 
+/**
+ * Saves a report to IndexedDB for later sync.
+ * @param {Object} reportData - { type, description, location, imageBase64, imageName }
+ */
 export async function saveReportOffline(reportData) {
   const db = await openDB();
   await new Promise((resolve, reject) => {
@@ -77,9 +103,14 @@ export async function saveReportOffline(reportData) {
     request.onerror = () => reject(request.error);
   });
 
+  // Register background sync so the SW can trigger sync even if tab is closed
   registerBackgroundSync();
 }
 
+/**
+ * Retrieves all pending offline reports.
+ * @returns {Promise<Array>}
+ */
 export async function getPendingReports() {
   const db = await openDB();
   return new Promise((resolve, reject) => {
@@ -91,6 +122,10 @@ export async function getPendingReports() {
   });
 }
 
+/**
+ * Removes a successfully synced report from IndexedDB.
+ * @param {number} id - The auto-incremented key
+ */
 export async function removePendingReport(id) {
   const db = await openDB();
   return new Promise((resolve, reject) => {
@@ -102,6 +137,10 @@ export async function removePendingReport(id) {
   });
 }
 
+/**
+ * Attempts to sync all pending offline reports to the server.
+ * Returns { synced: number, failed: number }
+ */
 export async function syncPendingReports(apiInstance) {
   const pending = await getPendingReports();
   if (pending.length === 0) return { synced: 0, failed: 0 };
@@ -114,8 +153,9 @@ export async function syncPendingReports(apiInstance) {
       const formData = new FormData();
       formData.append("type", report.type);
       formData.append("description", report.description);
-      formData.append("location", report.location);
+      formData.append("location", report.location); // Already JSON stringified
 
+      // Reconstruct image blob from base64
       if (report.imageBase64) {
         const blob = base64ToBlob(report.imageBase64);
         if (blob) {
@@ -135,6 +175,11 @@ export async function syncPendingReports(apiInstance) {
   return { synced, failed };
 }
 
+/**
+ * Converts a File object to a serializable record for IndexedDB.
+ * @param {Object} params - { type, description, location (JSON string), photoFile (File) }
+ * @returns {Promise<Object>} - Serializable report object
+ */
 export async function prepareOfflineReport({ type, description, location, photoFile }) {
   let imageBase64 = null;
   let imageName = null;
@@ -147,12 +192,22 @@ export async function prepareOfflineReport({ type, description, location, photoF
   return {
     type,
     description,
-    location,
+    location, // Already JSON.stringify'd [lng, lat]
     imageBase64,
     imageName,
   };
 }
 
+/* ══════════════════════════════════════════
+   Offline Contacts Cache
+   ══════════════════════════════════════════ */
+
+/**
+ * Stores emergency contacts in IndexedDB for offline access.
+ * @param {string} localGov - VDC/municipality name
+ * @param {string} department - fire, police, flood, etc.
+ * @param {Array} contacts - Array of contact objects
+ */
 export async function cacheContacts(localGov, department, contacts) {
   const db = await openDB();
   const cacheKey = `${localGov.toLowerCase()}/${department.toLowerCase()}`;
@@ -172,6 +227,10 @@ export async function cacheContacts(localGov, department, contacts) {
   });
 }
 
+/**
+ * Retrieves cached contacts from IndexedDB.
+ * @returns {Promise<Array|null>} - Contacts array or null if not cached
+ */
 export async function getCachedContacts(localGov, department) {
   const db = await openDB();
   const cacheKey = `${localGov.toLowerCase()}/${department.toLowerCase()}`;

@@ -1,6 +1,6 @@
 import { create } from "zustand";
 
-const EXPIRY_TIME = 30 * 60 * 1000;
+const EXPIRY_TIME = 30 * 60 * 1000; // 30 minutes in ms
 
 export const useLocalGovStore = create((set, get) => ({
   localGov: null,
@@ -20,6 +20,7 @@ export const useLocalGovStore = create((set, get) => ({
 
     const now = Date.now();
     if (now - lastUpdated > EXPIRY_TIME) {
+      // Expired → clear cache
       set({ localGov: null, coordinates: null, lastUpdated: null });
       return null;
     }

@@ -5,6 +5,7 @@ const API = axios.create({
   timeout: 30000,
 });
 
+// ✅ Attach token from localStorage
 API.interceptors.request.use((config) => {
   const token = localStorage.getItem("token");
   if (token) {
