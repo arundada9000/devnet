@@ -157,7 +157,7 @@ Authorization: Bearer <token> (admin)
 GET /api/auth/users/:id
 ```
 
-**Response (200):** Single user object (includes password hash — use for server-side only)
+**Response (200):** Single user object.
 
 ---
 
