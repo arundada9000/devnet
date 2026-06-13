@@ -1,3 +1,4 @@
+// AppRoutes.jsx with React.lazy() code splitting & Framer Motion transitions
 import React, { Suspense } from "react";
 import {
   BrowserRouter as Router,
@@ -10,6 +11,7 @@ import { AnimatePresence } from "framer-motion";
 import PageLoader from "../components/PageLoader";
 import ErrorBoundary from "../components/ErrorBoundary";
 
+// Lazy-loaded page components
 const Signin = React.lazy(() => import("../pages/Auth/Login"));
 const Signup = React.lazy(() => import("../pages/Auth/Signup"));
 const ForgotPassword = React.lazy(() => import("../pages/Auth/ForgotPassword"));
@@ -33,6 +35,7 @@ const Profile = React.lazy(() => import("../pages/Dashboard/Profile"));
 const Unauthorized = React.lazy(() => import("../pages/Unauthorized"));
 const NotFound = React.lazy(() => import("../pages/NotFound"));
 
+// Eagerly loaded (small, critical-path components)
 import Navigation from "../layouts/Navigation";
 import RequireAdmin from "../Auth/RequireAdmin";
 import Logout from "../Auth/Logout";
@@ -41,6 +44,8 @@ import AdminLayout from "../layouts/AdminLayout";
 const AnimatedRoutes = () => {
   const location = useLocation();
 
+  // Use a stable key for admin routes so AdminLayout (and sidebar) never remounts.
+  // Non-admin routes get unique keys for page transition animations.
   const isAdminRoute = location.pathname.startsWith("/admin");
   const routeKey = isAdminRoute ? "admin" : location.pathname;
 
